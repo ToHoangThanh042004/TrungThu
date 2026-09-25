@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Đêm Rằm Trung Thu - Thiệp Tương Tác & Quét Mã QR</title>
+  <meta name="description" content="Trang web thiệp Trung Thu tương tác lung linh với đèn trời, pháo hoa, nhạc lofi và tính năng tạo & quét mã QR cá nhân hóa.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+
+  <!-- Thư viện tạo mã QR & quét mã QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Canvas nền hiệu ứng: Đèn trời bay, sao băng, pháo hoa -->
+  <canvas id="sky-canvas"></canvas>
+
+  <!-- Lớp phủ ánh trăng lung linh -->
+  <div class="moon-wrapper" id="moon-element">
+    <div class="moon-glow"></div>
+    <div class="moon-sphere">
+      <div class="moon-crater c1"></div>
+      <div class="moon-crater c2"></div>
+      <div class="moon-crater c3"></div>
+      <div class="moon-cloud cloud-1"></div>
+      <div class="moon-cloud cloud-2"></div>
+    </div>
+  </div>
+
+  <!-- Thanh điều khiển nhạc & tiện ích ở góc trên -->
+  <header class="top-nav">
+    <div class="brand-badge">
+      <span class="badge-icon">🥮</span>
+      <span class="badge-text">Tết Đoàn Viên</span>
+    </div>
+    
+    <div class="nav-controls">
+      <!-- Nút âm thanh -->
+      <button id="btn-toggle-sound" class="icon-btn pulse-glow" title="Bật/Tắt nhạc nền" aria-label="Bật hoặc tắt nhạc nền">
+        <span id="sound-icon">🎵</span>
+        <span class="btn-text">Bật Nhạc</span>
+      </button>
+
+      <!-- Nút mở máy quét QR -->
+      <button id="btn-open-scanner" class="icon-btn action-scan" title="Quét mã QR từ camera" aria-label="Quét mã QR">
+        <span class="scan-icon">📷</span>
+        <span class="btn-text">Quét QR</span>
+      </button>
+
+      <!-- Nút tự tạo mã QR thiệp của mình -->
+      <button id="btn-open-creator" class="icon-btn action-create" title="Tạo mã QR thiệp của bạn" aria-label="Tạo mã QR thiệp">
+        <span>✨</span>
+        <span class="btn-text">Tạo Thiệp QR</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Nội dung trung tâm: Thiệp Trung Thu tương tác -->
+  <main class="main-container">
+
+    <!-- Trạng thái 1: Màn hình chờ mở quà (Trông như một chiếc lồng đèn / phong bao phát sáng) -->
+    <section id="envelope-section" class="envelope-section">
+      <div class="lantern-star-container" id="star-lantern-hero">
+        <!-- Đèn ông sao 5 cánh truyền thống phát sáng -->
+        <div class="star-lantern">
+          <div class="star-center">
+            <span class="lantern-center-text">Phá Cỗ</span>
+          </div>
+          <div class="star-point pt-1"></div>
+          <div class="star-point pt-2"></div>
+          <div class="star-point pt-3"></div>
+          <div class="star-point pt-4"></div>
+          <div class="star-point pt-5"></div>
+          <div class="lantern-tassels">
+            <span class="tassel t1"></span>
+            <span class="tassel t2"></span>
+            <span class="tassel t3"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="intro-box">
+        <h1 class="main-title">Chúc Mừng Tết Trung Thu</h1>
+        <p class="intro-subtitle" id="recipient-greeting-intro">Bạn có một bức thư bí mật dưới ánh trăng rằm...</p>
+        <button id="btn-open-letter" class="btn-magic-glow">
+          <span class="sparkle">🏮</span>
+          <span class="btn-content">Chạm để mở thiệp</span>
+          <span class="sparkle">🏮</span>
+        </button>
+        <span class="touch-hint">Chạm vào bất kỳ điểm nào trên bầu trời để bắn pháo hoa</span>
+      </div>
+    </section>
+
+    <!-- Trạng thái 2: Thư Trung Thu mở ra lung linh -->
+    <section id="card-section" class="card-section hidden">
+      <div class="card-wrapper glass-card">
+        <div class="card-header-art">
+          <div class="rabbit-badge">🐇</div>
+          <div class="header-tags">
+            <span class="tag">Rằm Tháng Tám</span>
+            <span class="tag highlight">Đêm Hội Trăng Rằm</span>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <p class="greeting-to">Gửi: <strong id="card-receiver-name">Người thương</strong> ✨</p>
+          <div class="greeting-divider">
+            <span class="divider-line"></span>
+            <span class="divider-icon">🌕</span>
+            <span class="divider-line"></span>
+          </div>
+          
+          <div class="greeting-letter-body" id="card-letter-body">
+            "Trung Thu này, chúc bạn luôn giữ được nụ cười rạng rỡ và an yên như vầng trăng rằm tháng Tám. 
+            Mong bạn có những giây phút ngọt ngào như vị bánh dẻo, ấm áp sum vầy bên những người trân quý nhất, 
+            và mọi ước nguyện gửi lên bầu trời đêm nay đều sớm thành hiện thực!"
+          </div>
+
+          <div class="greeting-signature">
+            <span class="sign-label">Thương mến,</span>
+            <strong class="sender-name" id="card-sender-name">Một người giấu tên 🏮</strong>
+          </div>
+        </div>
+
+        <!-- Các nút tương tác thú vị dưới bức thiệp -->
+        <div class="card-action-bar">
+          <button id="btn-make-wish" class="btn-secondary" title="Gửi điều ước lên đèn trời">
+            <span>🏮</span> Thả Đèn Ước
+          </button>
+          <button id="btn-fireworks" class="btn-secondary" title="Bắn tràng pháo hoa">
+            <span>🎆</span> Bắn Pháo Hoa
+          </button>
+          <button id="btn-share-card" class="btn-primary" title="Tạo mã QR thiệp này gửi bạn bè">
+            <span>📲</span> Tạo QR Tặng Bạn
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL 1: TẠO MÃ QR THIỆP CÁ NHÂN HÓA (Để chia sẻ/làm trend TikTok) -->
+  <div id="modal-qr-creator" class="modal-backdrop hidden">
+    <div class="modal-dialog glass-panel">
+      <div class="modal-header">
+        <h2>✨ Tạo Mã QR Thiệp Trung Thu</h2>
+        <button class="btn-close-modal" id="btn-close-creator" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-desc">
+          Điền thông tin bên dưới để tạo mã QR độc quyền. Người nhận chỉ cần mở camera quét mã QR là sẽ thấy thiệp riêng của bạn!
+        </p>
+
+        <form id="form-create-qr" onsubmit="return false;">
+          <div class="form-group">
+            <label for="input-receiver">Tên người nhận (Crush / Bạn bè / Người yêu):</label>
+            <input type="text" id="input-receiver" placeholder="Ví dụ: Bé Mèo, Anh Yêu, Bạn Thân..." maxlength="40" required>
+          </div>
+
+          <div class="form-group">
+            <label for="input-message">Lời chúc Trung Thu của bạn:</label>
+            <textarea id="input-message" rows="3" placeholder="Nhập lời chúc chân thành, ngọt ngào gửi đến người ấy..." maxlength="300"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="input-sender">Tên người gửi:</label>
+            <input type="text" id="input-sender" placeholder="Ví dụ: Hoàng tử của em, Người giấu tên..." maxlength="40">
+          </div>
+
+          <button id="btn-generate-qr" type="button" class="btn-submit-glow">
+            <span>🌟</span> Sinh Mã QR Ngay
+          </button>
+        </form>
+
+        <!-- Khung hiển thị kết quả mã QR -->
+        <div id="qr-result-container" class="qr-result-box hidden">
+          <div class="qr-code-frame">
+            <div id="qrcode-display"></div>
+            <p class="qr-caption">Quét mã để mở thiệp Trung Thu bí mật 🌕</p>
+          </div>
+
+          <div class="qr-actions">
+            <button id="btn-download-qr" class="btn-tool">
+              <span>📥</span> Tải Ảnh QR
+            </button>
+            <button id="btn-copy-link" class="btn-tool">
+              <span>📋</span> Copy Đường Link
+            </button>
+            <button id="btn-test-preview" class="btn-tool preview">
+              <span>👀</span> Xem Thử
+            </button>
+          </div>
+          <span id="copy-status" class="copy-alert hidden">Đã sao chép link thành công!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: MÁY QUÉT MÃ QR (Bằng Camera điện thoại / Laptop) -->
+  <div id="modal-qr-scanner" class="modal-backdrop hidden">
+    <div class="modal-dialog glass-panel scanner-modal">
+      <div class="modal-header">
+        <h2>📷 Quét Mã QR Trung Thu</h2>
+        <button class="btn-close-modal" id="btn-close-scanner" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-desc">
+          Hướng camera về phía mã QR thiệp Trung Thu để mở lời chúc bí mật:
+        </p>
+
+        <!-- Khung quét camera HTML5 QR Code -->
+        <div class="scanner-frame">
+          <div id="qr-reader" class="camera-stream"></div>
+          <div class="scanner-laser"></div>
+        </div>
+
+        <div id="scanner-result-msg" class="scan-status-text">Đang sẵn sàng kết nối camera...</div>
+
+        <div class="scanner-controls">
+          <button id="btn-stop-scanner" class="btn-secondary">
+            <span>⏹</span> Tắt Camera
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: THẢ ĐÈN TRỜI CẦU NGUYỆN -->
+  <div id="modal-wish" class="modal-backdrop hidden">
+    <div class="modal-dialog glass-panel wish-modal">
+      <div class="modal-header">
+        <h2>🏮 Thả Đèn Trời Nguyện Ước</h2>
+        <button class="btn-close-modal" id="btn-close-wish" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-desc">
+          Tương truyền vào đêm trăng rằm, mỗi chiếc đèn trời thả lên cùng lời nguyện ước chân thành đều sẽ mang lại bình an và may mắn:
+        </p>
+        <div class="form-group">
+          <label for="input-wish-text">Điều ước của bạn đêm nay:</label>
+          <input type="text" id="input-wish-text" placeholder="Ví dụ: Mong cả nhà luôn bình an khỏe mạnh, thi đỗ thủ khoa..." maxlength="100">
+        </div>
+        <button id="btn-send-wish" class="btn-submit-glow">
+          <span>✨</span> Thắp Sáng & Thả Lên Trời
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast thông báo nhỏ nhẹ -->
+  <div id="toast" class="toast-box hidden"></div>
+
+  <!-- Footer tinh tế -->
+  <footer class="footer-credit">
+    <p>Tết Trung Thu Tương Tác • Sáng tạo thiệp & Mã QR gửi trọn yêu thương</p>
+  </footer>
+
+  <!-- Script logic -->
+  <script src="script.js"></script>
+</body>
+</html>
