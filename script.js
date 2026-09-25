@@ -1022,45 +1022,146 @@ document.addEventListener('DOMContentLoaded', () => {
 
     qrcodeDisplay.innerHTML = '';
 
+    const receiverTitle = document.getElementById('mooncake-receiver-title');
+    if (receiverTitle) {
+      receiverTitle.textContent = receiver ? `Gửi ${receiver}` : 'Gửi Bạn Yêu Quý';
+    }
+
     if (typeof QRCode !== 'undefined') {
       qrCodeInstance = new QRCode(qrcodeDisplay, {
         text: generatedShareUrl,
-        width: 190,
-        height: 190,
-        colorDark: '#0e122b',
-        colorLight: '#ffffff',
+        width: 256,
+        height: 256,
+        colorDark: '#501400',
+        colorLight: '#fff6e5',
         correctLevel: QRCode.CorrectLevel.H
       });
 
       qrResultContainer.classList.remove('hidden');
       copyStatus.classList.add('hidden');
-      showToast('✨ Đã sinh mã QR thiên hà 3D thành công!');
+      showToast('🥮 Đã tạo bánh Trung Thu mã QR thành công!');
     }
   });
 
-  btnDownloadQr.addEventListener('click', () => {
-    const img = qrcodeDisplay.querySelector('img');
-    const canvasEl = qrcodeDisplay.querySelector('canvas');
-    let dataUrl = '';
+  btnDownloadQr.addEventListener('click', async () => {
+    const receiver = document.getElementById('input-receiver').value.trim() || 'Ban';
+    const qrImg = qrcodeDisplay.querySelector('img');
+    const qrCanvas = qrcodeDisplay.querySelector('canvas');
 
-    if (img && img.src) {
-      dataUrl = img.src;
-    } else if (canvasEl) {
-      dataUrl = canvasEl.toDataURL('image/png');
-    }
-
-    if (!dataUrl) {
+    if (!qrImg && !qrCanvas) {
       showToast('⚠️ Vui lòng tạo mã QR trước khi tải!');
       return;
     }
 
-    const downloadLink = document.createElement('a');
-    downloadLink.href = dataUrl;
-    downloadLink.download = `Thiep_Trung_Thu_3D_${Date.now()}.png`;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-    showToast('📥 Đã tải ảnh mã QR về máy!');
+    try {
+      showToast('⏳ Đang xuất ảnh bánh Trung Thu QR chất lượng cao...');
+
+      // Load base mooncake frame
+      const frameImg = new Image();
+      frameImg.crossOrigin = 'anonymous';
+
+      await new Promise((resolve, reject) => {
+        frameImg.onload = resolve;
+        frameImg.onerror = reject;
+        frameImg.src = 'assets/mooncake_frame.jpg';
+      });
+
+      // Prepare canvas (1024 x 1024)
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = 1024;
+      exportCanvas.height = 1024;
+      const ctx = exportCanvas.getContext('2d');
+
+      // 1. Draw white background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // 2. Draw mooncake illustration
+      ctx.drawImage(frameImg, 0, 0, 1024, 1024);
+
+      // 3. Draw QR Code into the center of the mooncake
+      // Circle center in 1024x1024 is x = 494 (48.24%), y = 652 (63.67%)
+      const qrSize = 216;
+      const qrX = Math.round(494 - qrSize / 2);
+      const qrY = Math.round(652 - qrSize / 2);
+
+      // Draw subtle rounded background backing for QR
+      ctx.save();
+      const pad = 6;
+      const r = 10;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, r);
+      } else {
+        ctx.rect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2);
+      }
+      ctx.fillStyle = '#fff6e5';
+      ctx.shadowColor = 'rgba(80, 20, 0, 0.35)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#d97706';
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw the QR image or canvas
+      if (qrCanvas) {
+        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+      } else if (qrImg && qrImg.src) {
+        const tempQr = new Image();
+        tempQr.crossOrigin = 'anonymous';
+        await new Promise((resolve) => {
+          tempQr.onload = resolve;
+          tempQr.onerror = resolve;
+          tempQr.src = qrImg.src;
+        });
+        ctx.drawImage(tempQr, qrX, qrY, qrSize, qrSize);
+      }
+
+      // 4. Draw festive typography header and footer
+      ctx.save();
+      ctx.textAlign = 'center';
+
+      // Card Tag
+      ctx.font = 'bold 22px "Segoe UI", Roboto, sans-serif';
+      ctx.fillStyle = '#b45309';
+      ctx.fillText('🥮 BÁNH TRUNG THU ĐÊM TRĂNG 3D 🥮', 512, 55);
+
+      // Recipient name
+      ctx.font = 'bold 36px "Segoe UI", Roboto, sans-serif';
+      ctx.fillStyle = '#451a03';
+      ctx.fillText(`Gửi ${receiver}`, 512, 105);
+
+      // Bottom guidance note
+      ctx.font = '600 20px "Segoe UI", Roboto, sans-serif';
+      ctx.fillStyle = '#9a3412';
+      ctx.fillText('✨ Quét mã bánh trung thu bằng camera để mở đêm trăng 3D ✨', 512, 985);
+      ctx.restore();
+
+      // Export to file
+      const dataUrl = exportCanvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataUrl;
+      const sanitizedName = receiver.replace(/[^a-zA-Z0-9_\u00C0-\u1EF9]/g, '_');
+      downloadLink.download = `Banh_Trung_Thu_QR_${sanitizedName}_${Date.now()}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      showToast('📥 Đã tải trọn bộ ảnh Bánh Trung Thu QR xinh xắn!');
+    } catch (err) {
+      console.error('Lỗi khi xuất ảnh bánh:', err);
+      const fallbackUrl = (qrImg && qrImg.src) ? qrImg.src : (qrCanvas ? qrCanvas.toDataURL('image/png') : '');
+      if (fallbackUrl) {
+        const link = document.createElement('a');
+        link.href = fallbackUrl;
+        link.download = `QR_Trung_Thu_${Date.now()}.png`;
+        link.click();
+      }
+      showToast('⚠️ Đã tải ảnh QR cơ bản.');
+    }
   });
 
   btnCopyLink.addEventListener('click', async () => {

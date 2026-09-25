@@ -294,16 +294,27 @@
           </div>
         </form>
 
-        <!-- Khung kết quả mã QR -->
+        <!-- Khung kết quả mã QR Bánh Trung Thu -->
         <div id="qr-result-container" class="qr-result-container hidden">
-          <div class="qr-preview-card">
-            <div id="qrcode-display" class="qrcode-wrapper"></div>
-            <p class="qr-caption">Quét mã bằng camera điện thoại để bước vào đêm trăng 3D</p>
+          <div class="mooncake-card-wrapper" id="mooncake-card-to-export">
+            <div class="mooncake-card-header">
+              <span class="mooncake-tag">🥮 BÁNH TRUNG THU ĐÊM TRĂNG 3D</span>
+              <h3 id="mooncake-receiver-title" class="mooncake-title">Gửi Bé Yêu</h3>
+            </div>
+            
+            <div class="mooncake-frame-container">
+              <img src="assets/mooncake_frame.jpg" alt="Bánh trung thu thỏ ngọc" class="mooncake-frame-img" id="mooncake-frame-img">
+              <div class="mooncake-qr-overlay">
+                <div id="qrcode-display" class="qrcode-wrapper"></div>
+              </div>
+            </div>
+
+            <p class="qr-caption">Quét mã bánh trung thu bằng camera để bước vào đêm trăng 3D ✨</p>
           </div>
 
           <div class="qr-actions">
-            <button id="btn-download-qr" class="btn btn-secondary btn-sm" type="button">
-              <span>📥</span> Tải Ảnh QR
+            <button id="btn-download-qr" class="btn btn-primary btn-sm" type="button">
+              <span>📥</span> Tải Bánh QR Về Máy
             </button>
             <button id="btn-copy-link" class="btn btn-secondary btn-sm" type="button">
               <span>📋</span> Sao Chép Link
