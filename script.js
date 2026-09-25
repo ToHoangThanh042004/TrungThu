@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
      (Hệt như cảnh xoay các dòng chữ 3D trong clip TikTok)
      ======================================================== */
   class GalaxySphere3D {
-    constructor(container, radius = 170) {
+    constructor(container, radius = 200) {
       this.container = container;
       this.radius = radius;
       this.items = [];
@@ -272,33 +272,91 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initWords() {
-      const receiver = currentParams.to ? decodeURIComponent(currentParams.to) : 'Em Bé';
+      const receiver = currentParams.to ? decodeURIComponent(currentParams.to) : 'Bạn';
+
+      // ===== LỜI CHÚC & LỜI KHEN TRUNG THU (không có lời yêu) =====
       const wordList = [
-        `Gửi ${receiver} 🌕`,
-        'Trung thu vui vẻ',
-        'I love you <3',
-        'Trung thu ấm áp',
-        'Iu em nhiều lắm',
-        'Bình an & hạnh phúc',
-        'Hạnh phúc bên anh',
-        'Mãi là ánh trăng sáng',
-        'Ấm êm từng phút giây',
-        'Trung thu rực rỡ',
-        'Yêu em vô cùng',
-        'Tết Đoàn Viên',
-        'Ngọt ngào như bánh dẻo',
-        'Xinh đẹp như Chị Hằng',
-        '🌕', '🏮', '🐇', '🥮', '❤️', '✨', '💕', '🥰'
+        // --- Lời chào & Lời chúc Trung Thu ---
+        `🌕 Chúc ${receiver} Trung Thu Vui Vẻ!`,
+        'Chúc Mừng Tết Đoàn Viên 🥮',
+        'Trung Thu bình an & ấm áp',
+        'Mừng Rằm Tháng Tám 🏮',
+        'Chúc mọi điều tốt đẹp',
+        'Bình an đến muôn nơi ✨',
+        'Tết Đoàn Viên sum họp',
+        'Ngập tràn niềm vui và tiếng cười',
+        'Sức khỏe dồi dào mỗi ngày',
+        'Mọi ước nguyện thành hiện thực',
+        'Vạn sự như ý 🌟',
+        'Bình an thịnh vượng',
+        'Hạnh phúc viên mãn',
+        'May mắn đong đầy',
+        'Cuộc sống tươi sáng mỗi ngày',
+        'Luôn mỉm cười rạng rỡ',
+        'Trọn vẹn niềm vui',
+        'Tết Trung Thu ấm áp 🌕',
+
+        // --- Lời khen ngợi ---
+        `${receiver} thật tài năng 💫`,
+        `${receiver} luôn toả sáng ✨`,
+        'Bạn thật xuất sắc!',
+        'Người thật đặc biệt 🌟',
+        'Tài năng vô hạn',
+        'Thông minh & sáng tạo',
+        'Nghị lực phi thường 💪',
+        'Luôn truyền cảm hứng',
+        'Nhân cách tuyệt vời',
+        'Tâm hồn trong sáng',
+        'Nụ cười rạng ngời như trăng',
+        'Bước đi vững chắc & tự tin',
+        'Trái tim nhân hậu',
+        'Kiên trì & cố gắng mỗi ngày',
+        'Tinh thần lạc quan',
+        'Luôn lan toả năng lượng tích cực',
+        'Người bạn tuyệt vời nhất',
+        'Đáng kính & đáng ngưỡng mộ',
+
+        // --- Hình ảnh & ẩn dụ Trung Thu ---
+        'Xinh đẹp như Chị Hằng 🌕',
+        'Dịu dàng như ánh trăng',
+        'Ngọt ngào như bánh dẻo 🥮',
+        'Sáng ngời tựa vầng nguyệt',
+        'Rực rỡ như đèn lồng đêm hội',
+        'Trong trẻo như đêm Rằm',
+        'Ấm áp như lửa đèn Trung Thu',
+        'Thỏ Ngọc cung trăng 🐇',
+        'Hương quế bay khắp nơi',
+
+        // --- Lời chúc tương lai ---
+        'Thành công rực rỡ phía trước',
+        'Vươn cao hơn mỗi ngày',
+        'Ước mơ chắp cánh bay xa',
+        'Tương lai xán lạn đón chờ',
+        'Học hành giỏi giang 📚',
+        'Sự nghiệp thăng tiến',
+        'Sống thật & sống tốt',
+        'Trưởng thành từng bước',
+
+        // --- Emoji bầu không khí Trung Thu ---
+        '🌕', '🌙', '⭐', '✨', '💫', '🌟',
+        '🏮', '🏮', '🐇', '🥮', '🎆', '🎇',
+        '🌸', '🍃', '🌺', '🦋'
       ];
 
       if (currentParams.photo) {
         wordList.push({ type: 'photo', url: decodeURIComponent(currentParams.photo) });
       }
 
+      // Danh sách emoji để nhận diện class
+      const emojiSet = new Set(['🌕','🌙','⭐','✨','💫','🌟','🏮','🐇','🥮','🎆','🎇','🌸','🍃','🌺','🦋']);
+
+      // Từ khoá nổi bật màu vàng
+      const highlightKeywords = [receiver, 'Chúc Mừng', 'Tết Đoàn Viên', 'toả sáng', 'Xuất Sắc'];
+
       this.container.innerHTML = '';
       const count = wordList.length;
 
-      // Thuật toán Fibonacci Sphere để rải đều các từ trên mặt cầu
+      // Thuật toán Fibonacci Sphere – rải đều các từ trên bề mặt cầu
       for (let i = 0; i < count; i++) {
         const phi = Math.acos(1 - 2 * (i + 0.5) / count);
         const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
@@ -316,12 +374,12 @@ document.addEventListener('DOMContentLoaded', () => {
           const img = document.createElement('img');
           img.src = item.url;
           el.appendChild(img);
-        } else if (['🌕', '🏮', '🐇', '🥮', '❤️', '✨', '💕', '🥰'].includes(item)) {
+        } else if (emojiSet.has(item)) {
           el.classList.add('emoji-tag');
           el.textContent = item;
         } else {
           el.textContent = item;
-          if (item.includes(receiver) || item.includes('I love you')) {
+          if (highlightKeywords.some(kw => item.includes(kw))) {
             el.classList.add('highlight');
           }
         }
@@ -446,33 +504,52 @@ document.addEventListener('DOMContentLoaded', () => {
     init() {
       this.width = this.canvas.width = 280;
       this.height = this.canvas.height = 280;
+      this.sparkles = []; // Hạt lấp lánh bắn ngẫu nhiên
+      this.time = 0;
 
-      // Tạo các hạt chạy dọc theo đường cong trái tim
-      const particleCount = 75;
-      for (let i = 0; i < particleCount; i++) {
+      // Lớp 1: Hạt trượt dọc viền trái tim (dày hơn)
+      const heartColors = ['#ffd166', '#ffeaa7', '#f59e0b', '#ff6b6b', '#ffffff'];
+      for (let i = 0; i < 120; i++) {
         this.particles.push({
           t: Math.random() * Math.PI * 2,
-          speed: Math.random() * 0.015 + 0.008,
-          size: Math.random() * 2.5 + 1.2,
-          glow: Math.random() * 15 + 5,
-          color: Math.random() > 0.3 ? '#ffd166' : '#ff4d6d'
+          speed: Math.random() * 0.012 + 0.005,
+          size: Math.random() * 3 + 1,
+          glow: Math.random() * 18 + 6,
+          color: heartColors[Math.floor(Math.random() * heartColors.length)],
+          trail: [] // Vệt đuôi sao
         });
       }
 
-      // Tạo hạt quay theo vòng tròn halo quanh ảnh
-      for (let i = 0; i < 40; i++) {
+      // Lớp 2: Hạt hào quang xoay tròn quanh ảnh (2 vòng)
+      for (let i = 0; i < 60; i++) {
+        const inner = i < 30;
         this.ringParticles.push({
           angle: Math.random() * Math.PI * 2,
-          speed: (Math.random() * 0.02 + 0.01) * (Math.random() > 0.5 ? 1 : -1),
-          radius: Math.random() * 15 + 105,
-          size: Math.random() * 2 + 1,
-          color: '#ffea79'
+          speed: (Math.random() * 0.018 + 0.008) * (Math.random() > 0.5 ? 1 : -1),
+          radius: inner ? (Math.random() * 8 + 100) : (Math.random() * 12 + 118),
+          size: Math.random() * 2.5 + 0.8,
+          color: inner ? '#ffd166' : '#ffffff',
+          twinkle: Math.random() * Math.PI * 2 // phase để nhấp nháy
         });
       }
     }
 
+    spawnSparkle() {
+      // Thỉnh thoảng bắn hạt sáng nhỏ từ trái tim ra ngoài
+      const t = Math.random() * Math.PI * 2;
+      const pt = this.getHeartPoint(t);
+      const angle = Math.random() * Math.PI * 2;
+      this.sparkles.push({
+        x: pt.x, y: pt.y,
+        vx: Math.cos(angle) * (Math.random() * 1.5 + 0.5),
+        vy: Math.sin(angle) * (Math.random() * 1.5 + 0.5),
+        alpha: 1,
+        size: Math.random() * 2 + 1,
+        color: Math.random() > 0.5 ? '#ffd166' : '#fff'
+      });
+    }
+
     getHeartPoint(t, scale = 7.5) {
-      // Phương trình toán học tạo hình trái tim
       const x = 16 * Math.pow(Math.sin(t), 3);
       const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
       return {
@@ -483,13 +560,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     animate() {
       this.ctx.clearRect(0, 0, this.width, this.height);
+      this.time++;
 
-      // Vẽ các hạt trên viền trái tim
+      // Thỉnh thoảng bắn sparkle
+      if (this.time % 4 === 0) this.spawnSparkle();
+
+      // Lớp 1: Hạt trái tim
       for (let p of this.particles) {
         p.t += p.speed;
         if (p.t > Math.PI * 2) p.t -= Math.PI * 2;
         const pt = this.getHeartPoint(p.t);
 
+        // Vệt đuôi sao chổi nhỏ
+        p.trail.push({ x: pt.x, y: pt.y });
+        if (p.trail.length > 5) p.trail.shift();
+
+        for (let ti = 0; ti < p.trail.length; ti++) {
+          const tp = p.trail[ti];
+          const trailAlpha = (ti + 1) / p.trail.length * 0.4;
+          this.ctx.save();
+          this.ctx.beginPath();
+          this.ctx.arc(tp.x, tp.y, p.size * 0.5, 0, Math.PI * 2);
+          this.ctx.fillStyle = p.color;
+          this.ctx.globalAlpha = trailAlpha;
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+
+        // Đầu hạt phát sáng
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.arc(pt.x, pt.y, p.size, 0, Math.PI * 2);
@@ -500,17 +598,40 @@ document.addEventListener('DOMContentLoaded', () => {
         this.ctx.restore();
       }
 
-      // Vẽ các hạt lấp lánh xoay quanh vòng halo
+      // Lớp 2: Hào quang vòng nhấp nháy
       for (let rp of this.ringParticles) {
         rp.angle += rp.speed;
+        rp.twinkle += 0.08;
         const rx = this.width / 2 + Math.cos(rp.angle) * rp.radius;
-        const ry = this.height / 2 + Math.sin(rp.angle) * (rp.radius * 0.4);
+        const ry = this.height / 2 + Math.sin(rp.angle) * (rp.radius * 0.38);
+        const alpha = 0.55 + 0.45 * Math.sin(rp.twinkle);
 
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.arc(rx, ry, rp.size, 0, Math.PI * 2);
         this.ctx.fillStyle = rp.color;
+        this.ctx.globalAlpha = alpha;
         this.ctx.shadowColor = '#ffd166';
+        this.ctx.shadowBlur = 10;
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+
+      // Lớp 3: Sparkle bắn ra từ trái tim
+      for (let i = this.sparkles.length - 1; i >= 0; i--) {
+        const sp = this.sparkles[i];
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.alpha -= 0.03;
+
+        if (sp.alpha <= 0) { this.sparkles.splice(i, 1); continue; }
+
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
+        this.ctx.fillStyle = sp.color;
+        this.ctx.globalAlpha = sp.alpha;
+        this.ctx.shadowColor = sp.color;
         this.ctx.shadowBlur = 8;
         this.ctx.fill();
         this.ctx.restore();
@@ -575,6 +696,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Mở cảnh Trái Tim Ánh Sáng từ thiên hà
+  const lyricLine = document.getElementById('lyric-line');
+  const heartLyricLines = [
+    '✨ "Bạn tỏa sáng như vầng trăng Rằm — rực rỡ, dịu dàng và đáng kính ngưỡng..." ✨',
+    '🌕 Chúc bạn Trung Thu bình an, hạnh phúc và tràn đầy niềm vui!',
+    '💫 Tài năng của bạn là ánh sáng soi đường cho nhiều người xung quanh.',
+    '🏮 Mừng Tết Đoàn Viên — mọi điều tốt đẹp hãy đến với bạn!',
+    '🌟 Bạn thật đặc biệt: kiên trì, nhân hậu và luôn truyền cảm hứng.',
+    '🥮 Ngọt ngào như bánh dẻo Trung Thu — chúc bạn cuộc sống viên mãn!',
+    '⭐ Ước mơ của bạn xứng đáng được thực hiện. Hãy vươn cao hơn nữa!',
+    '🐇 Thỏ Ngọc cung trăng chuyển lời chúc: sức khỏe dồi dào mỗi ngày!',
+    '🎆 Thành công rực rỡ phía trước đang chờ đón bạn. Bước tiếp nhé!',
+    '🌙 Dịu dàng như ánh trăng đêm nay — bạn làm cho cuộc đời thêm đẹp.',
+  ];
+  let lyricIdx = 0;
+  let lyricInterval = null;
+
+  function startLyricCycle() {
+    if (lyricLine) lyricLine.textContent = heartLyricLines[0];
+    clearInterval(lyricInterval);
+    lyricInterval = setInterval(() => {
+      lyricIdx = (lyricIdx + 1) % heartLyricLines.length;
+      if (lyricLine) {
+        lyricLine.style.opacity = '0';
+        lyricLine.style.transition = 'opacity 0.6s ease';
+        setTimeout(() => {
+          lyricLine.textContent = heartLyricLines[lyricIdx];
+          lyricLine.style.opacity = '1';
+        }, 620);
+      }
+    }, 4000);
+  }
+
   btnViewHeart.addEventListener('click', () => {
     sound.playChime();
     stageGalaxy.classList.add('hidden');
@@ -584,6 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!heartInstance && heartCanvas) {
       heartInstance = new SparklingHeart(heartCanvas);
     }
+    startLyricCycle();
   });
 
   // Về lại thiên hà từ trái tim
@@ -599,7 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ========================================================
-     6. PHÁO HOA TƯƠNG TÁC TRÊN SKY CANVAS
+     6. BẦU TRỜI NỀN ĐẦY HIỆU ỨNG + PHÁO HOA TƯƠNG TÁC
      ======================================================== */
   let width = (skyCanvas.width = window.innerWidth);
   let height = (skyCanvas.height = window.innerHeight);
@@ -607,10 +761,113 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => {
     width = skyCanvas.width = window.innerWidth;
     height = skyCanvas.height = window.innerHeight;
+    initStarfield();
   });
 
-  const sparks = [];
+  // === SAO LẤP LÁNH ===
+  const stars = [];
+  function initStarfield() {
+    stars.length = 0;
+    const n = Math.floor((width * height) / 4200);
+    for (let i = 0; i < n; i++) {
+      stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height * 0.92,
+        r: Math.random() * 1.4 + 0.2,
+        alpha: Math.random(),
+        speed: (Math.random() * 0.015 + 0.004) * (Math.random() > 0.5 ? 1 : -1),
+      });
+    }
+  }
+  initStarfield();
 
+  // === SAO BĂNG ===
+  const shootingStars = [];
+  function spawnShootingStar() {
+    shootingStars.push({
+      x: Math.random() * width * 0.85,
+      y: Math.random() * height * 0.35,
+      len: Math.random() * 90 + 40,
+      speed: Math.random() * 8 + 10,
+      angle: Math.PI / 4 + (Math.random() * 0.25 - 0.12),
+      alpha: 1,
+    });
+  }
+  setInterval(() => { if (Math.random() > 0.35) spawnShootingStar(); }, 3800);
+
+  // === ĐÈN TRỜI MINI BAY LƠ LỬNG ===
+  class MiniLantern {
+    constructor() { this.reset(true); }
+    reset(init) {
+      this.x = Math.random() * width;
+      this.y = init ? Math.random() * height : height + Math.random() * 60 + 20;
+      this.size = Math.random() * 13 + 9;
+      this.speedY = Math.random() * 0.38 + 0.2;
+      this.swayA = Math.random() * Math.PI * 2;
+      this.swayS = Math.random() * 0.012 + 0.006;
+      this.swayD = Math.random() * 1.1 + 0.4;
+      this.alpha = Math.random() * 0.45 + 0.45;
+      this.hue = Math.random() > 0.35 ? 40 : 12;
+    }
+    update() {
+      this.y -= this.speedY;
+      this.swayA += this.swayS;
+      this.x += Math.sin(this.swayA) * this.swayD;
+      if (this.y < -60) this.reset(false);
+    }
+    draw(ctx) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.globalAlpha = this.alpha;
+      const g = ctx.createRadialGradient(0, 0, this.size * 0.15, 0, 0, this.size * 1.6);
+      g.addColorStop(0, `hsla(${this.hue},100%,70%,0.55)`);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, this.size * 1.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.35, this.size * 0.5);
+      ctx.quadraticCurveTo(-this.size * 0.55, 0, -this.size * 0.38, -this.size * 0.48);
+      ctx.quadraticCurveTo(0, -this.size * 0.58, this.size * 0.38, -this.size * 0.48);
+      ctx.quadraticCurveTo(this.size * 0.55, 0, this.size * 0.35, this.size * 0.5);
+      ctx.closePath();
+      const b = ctx.createLinearGradient(0, -this.size * 0.5, 0, this.size * 0.5);
+      b.addColorStop(0, `hsla(${this.hue},90%,52%,0.9)`);
+      b.addColorStop(0.7, `hsla(${this.hue + 8},100%,72%,0.9)`);
+      b.addColorStop(1, `hsla(15,100%,58%,0.9)`);
+      ctx.fillStyle = b;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, this.size * 0.4, this.size * 0.13, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = '#ffeaa7';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  const lanterns = Array.from({ length: 18 }, () => new MiniLantern());
+
+  // === BỤI SAO VÀNG TRÔI DẠT ===
+  const dustParticles = [];
+  (function initDust() {
+    for (let i = 0; i < 65; i++) {
+      dustParticles.push({
+        x: Math.random() * (typeof width !== 'undefined' ? width : window.innerWidth),
+        y: Math.random() * (typeof height !== 'undefined' ? height : window.innerHeight),
+        r: Math.random() * 1.2 + 0.25,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: -Math.random() * 0.22 - 0.08,
+        alpha: Math.random() * 0.5 + 0.12,
+        twinkle: Math.random() * Math.PI * 2,
+        color: Math.random() > 0.5 ? '#ffd166' : '#ffffff',
+      });
+    }
+  })();
+
+  // === PHÁO HOA ===
+  const sparks = [];
   function createFireworkSparks(x, y) {
     sound.playFirework();
     const count = 35;
@@ -619,8 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const angle = (Math.PI * 2 / count) * i + Math.random() * 0.2;
       const speed = Math.random() * 4.5 + 2;
       sparks.push({
-        x,
-        y,
+        x, y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         alpha: 1,
@@ -631,21 +887,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // === VÒNG LẶP RENDER TỔNG HỢP ===
   function renderSky() {
     skyCtx.clearRect(0, 0, width, height);
 
+    // 1. Sao lấp lánh
+    for (const s of stars) {
+      s.alpha += s.speed;
+      if (s.alpha > 1 || s.alpha < 0.05) s.speed = -s.speed;
+      skyCtx.beginPath();
+      skyCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      skyCtx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+      skyCtx.fill();
+    }
+
+    // 2. Bụi sao vàng trôi
+    for (const d of dustParticles) {
+      d.x += d.vx;
+      d.y += d.vy;
+      d.twinkle += 0.03;
+      if (d.x < 0) d.x = width; if (d.x > width) d.x = 0;
+      if (d.y < 0) d.y = height; if (d.y > height) d.y = 0;
+      const a = d.alpha * (0.55 + 0.45 * Math.sin(d.twinkle));
+      skyCtx.beginPath();
+      skyCtx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      skyCtx.fillStyle = d.color;
+      skyCtx.globalAlpha = a;
+      skyCtx.fill();
+      skyCtx.globalAlpha = 1;
+    }
+
+    // 3. Sao băng
+    for (let i = shootingStars.length - 1; i >= 0; i--) {
+      const ss = shootingStars[i];
+      ss.x += Math.cos(ss.angle) * ss.speed;
+      ss.y += Math.sin(ss.angle) * ss.speed;
+      ss.alpha -= 0.022;
+      if (ss.alpha <= 0) { shootingStars.splice(i, 1); continue; }
+      skyCtx.save();
+      const grad = skyCtx.createLinearGradient(
+        ss.x, ss.y,
+        ss.x - Math.cos(ss.angle) * ss.len, ss.y - Math.sin(ss.angle) * ss.len
+      );
+      grad.addColorStop(0, `rgba(255,234,167,${ss.alpha})`);
+      grad.addColorStop(1, 'rgba(255,234,167,0)');
+      skyCtx.strokeStyle = grad;
+      skyCtx.lineWidth = 2;
+      skyCtx.beginPath();
+      skyCtx.moveTo(ss.x, ss.y);
+      skyCtx.lineTo(ss.x - Math.cos(ss.angle) * ss.len, ss.y - Math.sin(ss.angle) * ss.len);
+      skyCtx.stroke();
+      skyCtx.restore();
+    }
+
+    // 4. Đèn trời mini
+    for (const l of lanterns) { l.update(); l.draw(skyCtx); }
+
+    // 5. Pháo hoa tia sáng
     for (let i = sparks.length - 1; i >= 0; i--) {
       const sp = sparks[i];
-      sp.x += sp.vx;
-      sp.y += sp.vy;
-      sp.vy += 0.07;
-      sp.alpha -= sp.decay;
-
-      if (sp.alpha <= 0) {
-        sparks.splice(i, 1);
-        continue;
-      }
-
+      sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.07; sp.alpha -= sp.decay;
+      if (sp.alpha <= 0) { sparks.splice(i, 1); continue; }
       skyCtx.beginPath();
       skyCtx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
       skyCtx.fillStyle = sp.color;
