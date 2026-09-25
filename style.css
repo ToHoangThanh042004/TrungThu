@@ -201,6 +201,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 16px;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .scene-stage {
@@ -211,6 +214,7 @@ body {
   align-items: center;
   justify-content: center;
   animation: fadeIn 0.5s ease-out;
+  box-sizing: border-box;
 }
 
 /* ========================================================
@@ -519,27 +523,30 @@ body {
    ======================================================== */
 .stage-galaxy {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: calc(100vh - 120px);
+  height: calc(100dvh - 120px);
   max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin: 0 auto;
 }
 
 .galaxy-viewport {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 420px;
+  min-height: 380px;
   perspective: 900px;
   -webkit-perspective: 900px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: grab;
+  touch-action: none;
 }
 
 .galaxy-viewport:active {
@@ -547,10 +554,13 @@ body {
 }
 
 .galaxy-sphere {
-  position: relative;
-  width: 1px;
-  height: 1px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
   transform-style: preserve-3d;
+  pointer-events: none;
 }
 
 /* Các nhãn chữ 3D xoay vòng */
@@ -563,10 +573,13 @@ body {
   font-weight: 700;
   color: #ffffff;
   text-shadow: 0 0 10px rgba(255, 209, 102, 0.7), 0 2px 4px rgba(0, 0, 0, 0.8);
-  transform-origin: 50% 50%;
+  transform-origin: center center;
   transition: opacity 0.15s ease;
   pointer-events: none;
-  font-size: 0.9rem;  /* giảm xuống mặc định */
+  font-size: 0.85rem;
+  will-change: transform, opacity;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .galaxy-tag.highlight {
@@ -669,13 +682,22 @@ body {
    RESPONSIVE MOBILE — GALAXY & MOON STAGE
    ================================================ */
 @media (max-width: 640px) {
+  .main-content {
+    padding: 8px 0;
+  }
+
+  .stage-galaxy {
+    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
+  }
+
   /* Thu nhỏ font chữ trong thiên hà */
-  .galaxy-tag            { font-size: 0.72rem; }
-  .galaxy-tag.highlight  { font-size: 0.9rem; }
-  .galaxy-tag.emoji-tag  { font-size: 1.1rem; }
+  .galaxy-tag            { font-size: 0.70rem; }
+  .galaxy-tag.highlight  { font-size: 0.85rem; }
+  .galaxy-tag.emoji-tag  { font-size: 1.05rem; }
 
   /* Giảm chiều cao viewport */
-  .galaxy-viewport { min-height: 320px; perspective: 600px; }
+  .galaxy-viewport { min-height: 300px; perspective: 550px; }
 
   /* Nút nhỏ hơn */
   .galaxy-actions .btn { font-size: 0.78rem; padding: 8px 14px; }
@@ -698,8 +720,9 @@ body {
 
 @media (max-width: 380px) {
   .galaxy-tag            { font-size: 0.62rem; }
-  .galaxy-tag.highlight  { font-size: 0.78rem; }
-  .galaxy-tag.emoji-tag  { font-size: 0.95rem; }
+  .galaxy-tag.highlight  { font-size: 0.75rem; }
+  .galaxy-tag.emoji-tag  { font-size: 0.90rem; }
+  .galaxy-viewport       { min-height: 280px; perspective: 480px; }
 
   .orbit-photo {
     width: 52px;
@@ -708,7 +731,7 @@ body {
       rotate(var(--orbit-angle))
       translateX(100px)
       rotate(calc(-1 * var(--orbit-angle)));
-    animation: orbitFloat 1.6s ease-in-out infinite var(--orbit-delay);
+    animation: orbitFloat 1.8s ease-in-out infinite var(--orbit-delay);
   }
   .orbit-photo img { width: 52px; height: 52px; }
 }

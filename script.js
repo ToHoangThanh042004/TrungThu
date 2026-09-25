@@ -252,7 +252,17 @@ document.addEventListener('DOMContentLoaded', () => {
      (Hệt như cảnh xoay các dòng chữ 3D trong clip TikTok)
      ======================================================== */
   class GalaxySphere3D {
-    constructor(container, radius = 200) {
+    static getAdaptiveRadius() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const minDim = Math.min(w, h);
+      if (minDim <= 360) return 92;
+      if (minDim <= 430) return 106;
+      if (minDim <= 640) return 122;
+      return 185;
+    }
+
+    constructor(container, radius = 185) {
       this.container = container;
       this.radius = radius;
       this.items = [];
@@ -269,6 +279,17 @@ document.addEventListener('DOMContentLoaded', () => {
       this.initWords();
       this.bindEvents();
       this.animate();
+    }
+
+    updateRadius(newRadius) {
+      if (!newRadius || newRadius === this.radius || !this.items.length) return;
+      const ratio = newRadius / this.radius;
+      this.radius = newRadius;
+      for (let item of this.items) {
+        item.x *= ratio;
+        item.y *= ratio;
+        item.z *= ratio;
+      }
     }
 
     initWords() {
@@ -476,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const scale = perspective / (perspective + item.z);
         const alpha = Math.max(0.2, (item.z + this.radius) / (2 * this.radius) * 0.8 + 0.2);
 
-        item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, ${item.z}px) scale(${scale})`;
+        item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, ${item.z}px) translate(-50%, -50%) scale(${scale})`;
         item.el.style.opacity = alpha;
         item.el.style.zIndex = Math.floor(item.z + this.radius);
       }
@@ -675,9 +696,9 @@ document.addEventListener('DOMContentLoaded', () => {
     stageHeart.classList.add('hidden');
 
     if (!galaxyInstance) {
-      // Tự động giảm radius trên mobile để vừa màn hình
-    const isMobile = window.innerWidth <= 640;
-    galaxyInstance = new GalaxySphere3D(galaxySphere, isMobile ? 140 : 200);
+      galaxyInstance = new GalaxySphere3D(galaxySphere, GalaxySphere3D.getAdaptiveRadius());
+    } else {
+      galaxyInstance.updateRadius(GalaxySphere3D.getAdaptiveRadius());
     }
 
     showToast('✨ Vuốt trên màn hình để xoay thiên hà lời chúc!');
@@ -765,6 +786,9 @@ document.addEventListener('DOMContentLoaded', () => {
     width = skyCanvas.width = window.innerWidth;
     height = skyCanvas.height = window.innerHeight;
     initStarfield();
+    if (galaxyInstance) {
+      galaxyInstance.updateRadius(GalaxySphere3D.getAdaptiveRadius());
+    }
   });
 
   // === SAO LẤP LÁNH ===
