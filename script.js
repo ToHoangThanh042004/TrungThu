@@ -1,40 +1,43 @@
 /**
  * ========================================================
- * ĐÊM RẰM TRUNG THU - INTERACTIVE JAVASCRIPT
+ * TRUNG THU ONLINE - 3D INTERACTIVE TIKTOK MOTION SCRIPT
  * Features:
- *  - URL Parameter decoding (?to=...&from=...&msg=...)
- *  - Interactive Canvas: Sky lanterns, starry night, shooting stars, fireworks
- *  - Web Audio API Synthesizer (Lofi pentatonic melody & chimes)
- *  - Built-in QR Code Generator (Downloadable image & copy link)
- *  - HTML5 Camera QR Code Scanner with auto-decoding
- *  - Wish Lantern release physics & Confetti celebration
+ *  1. URL Param parsing (?to=...&from=...&msg=...&photo=...)
+ *  2. Stage 1: Glowing Moon & Jade Rabbit (Chạm vào mặt trăng)
+ *  3. Stage 2: 3D Celestial Galaxy of Wishes (3D Sphere rotation with touch/mouse)
+ *  4. Stage 3: Parchment Scroll Letter with personalized wishes
+ *  5. Stage 4: Sparkling Golden Heart particle canvas with photo
+ *  6. Web Audio Synthesizer (Romantic lofi melody & chimes)
+ *  7. QR Code Generator & Camera QR Scanner
  * ========================================================
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // DOM Elements
-  const canvas = document.getElementById('sky-canvas');
-  const ctx = canvas.getContext('2d');
-  
-  const envelopeSection = document.getElementById('envelope-section');
-  const cardSection = document.getElementById('card-section');
+  // DOM Navigation & Stages
+  const stageMoon = document.getElementById('envelope-section');
+  const stageGalaxy = document.getElementById('galaxy-section');
+  const stageCard = document.getElementById('card-section');
+  const stageHeart = document.getElementById('heart-section');
+
   const starLanternHero = document.getElementById('star-lantern-hero');
   const btnOpenLetter = document.getElementById('btn-open-letter');
-  
+  const btnViewLetter = document.getElementById('btn-view-letter');
+  const btnViewHeart = document.getElementById('btn-view-heart');
+  const btnCloseCard = document.getElementById('btn-close-card');
+  const btnBackToGalaxy = document.getElementById('btn-back-to-galaxy');
+  const btnReReadLetter = document.getElementById('btn-re-read-letter');
+
   const cardReceiverName = document.getElementById('card-receiver-name');
   const cardSenderName = document.getElementById('card-sender-name');
   const cardLetterBody = document.getElementById('card-letter-body');
   const recipientGreetingIntro = document.getElementById('recipient-greeting-intro');
-  
+  const couplePhotoImg = document.getElementById('couple-photo-img');
+
   const btnToggleSound = document.getElementById('btn-toggle-sound');
   const soundIcon = document.getElementById('sound-icon');
-  
-  const btnOpenScanner = document.getElementById('btn-open-scanner');
-  const modalScanner = document.getElementById('modal-qr-scanner');
-  const btnCloseScanner = document.getElementById('btn-close-scanner');
-  const btnStopScanner = document.getElementById('btn-stop-scanner');
-  const scannerResultMsg = document.getElementById('scanner-result-msg');
-  
+  const bgVideo = document.getElementById('bg-video-element');
+
+  // QR Creator & Scanner
   const btnOpenCreator = document.getElementById('btn-open-creator');
   const btnShareCard = document.getElementById('btn-share-card');
   const modalCreator = document.getElementById('modal-qr-creator');
@@ -46,15 +49,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyLink = document.getElementById('btn-copy-link');
   const btnTestPreview = document.getElementById('btn-test-preview');
   const copyStatus = document.getElementById('copy-status');
-  
+
+  const btnOpenScanner = document.getElementById('btn-open-scanner');
+  const modalScanner = document.getElementById('modal-qr-scanner');
+  const btnCloseScanner = document.getElementById('btn-close-scanner');
+  const btnStopScanner = document.getElementById('btn-stop-scanner');
+  const scannerResultMsg = document.getElementById('scanner-result-msg');
+
+  // Wish & Fireworks
   const btnMakeWish = document.getElementById('btn-make-wish');
   const modalWish = document.getElementById('modal-wish');
   const btnCloseWish = document.getElementById('btn-close-wish');
   const btnSendWish = document.getElementById('btn-send-wish');
   const inputWishText = document.getElementById('input-wish-text');
-  
   const btnFireworks = document.getElementById('btn-fireworks');
   const toastEl = document.getElementById('toast');
+
+  // Canvases
+  const skyCanvas = document.getElementById('sky-canvas');
+  const skyCtx = skyCanvas.getContext('2d');
+  const heartCanvas = document.getElementById('heart-canvas');
+  const heartCtx = heartCanvas ? heartCanvas.getContext('2d') : null;
+
+  // 3D Galaxy elements
+  const galaxyViewport = document.getElementById('galaxy-viewport');
+  const galaxySphere = document.getElementById('galaxy-sphere');
 
   // State
   let qrCodeInstance = null;
@@ -63,40 +82,46 @@ document.addEventListener('DOMContentLoaded', () => {
   let generatedShareUrl = '';
 
   /* ========================================================
-     1. XỬ LÝ DỮ LIỆU TỪ URL (KHI QUÉT MÃ QR MỞ TRANG)
+     1. XỬ LÝ URL PARAMS (?to=...&from=...&msg=...&photo=...)
      ======================================================== */
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    const to = params.get('to');
-    const from = params.get('from');
-    const msg = params.get('msg');
-    return { to, from, msg };
+    return {
+      to: params.get('to'),
+      from: params.get('from'),
+      msg: params.get('msg'),
+      photo: params.get('photo'),
+    };
   }
 
-  function applyCustomGreeting() {
-    const { to, from, msg } = getUrlParams();
+  const currentParams = getUrlParams();
 
-    if (to) {
-      const decodedTo = decodeURIComponent(to);
+  function applyCustomData() {
+    if (currentParams.to) {
+      const decodedTo = decodeURIComponent(currentParams.to);
       cardReceiverName.textContent = decodedTo;
-      recipientGreetingIntro.textContent = `${decodedTo} ơi, có một bức thư bí mật dưới trăng rằm dành riêng cho bạn! ✨`;
+      recipientGreetingIntro.textContent = `${decodedTo} ơi, ấn vào mặt trăng để mở thiệp... ✨`;
       document.title = `Thiệp Trung Thu gửi tặng ${decodedTo} 🌕`;
     }
 
-    if (from) {
-      cardSenderName.textContent = `${decodeURIComponent(from)} 🏮`;
+    if (currentParams.from) {
+      cardSenderName.textContent = `${decodeURIComponent(currentParams.from)} 🏮`;
     }
 
-    if (msg) {
-      cardLetterBody.textContent = `"${decodeURIComponent(msg)}"`;
+    if (currentParams.msg) {
+      cardLetterBody.textContent = `"${decodeURIComponent(currentParams.msg)}"`;
+    }
+
+    if (currentParams.photo && couplePhotoImg) {
+      couplePhotoImg.src = decodeURIComponent(currentParams.photo);
     }
   }
 
-  applyCustomGreeting();
+  applyCustomData();
 
   /* ========================================================
-     2. HỆ THỐNG ÂM THANH BẰNG WEB AUDIO API (KHÔNG SỢ LỖI FILE)
-     Nhạc ngũ cung đêm trăng nhẹ nhàng + tiếng chuông gió & pháo hoa
+     2. HỆ THỐNG ÂM THANH WEB AUDIO SYNTHESIZER
+     (Giai điệu lãng mạn nhẹ nhàng)
      ======================================================== */
   class SoundEngine {
     constructor() {
@@ -104,12 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
       this.isPlaying = false;
       this.timerId = null;
       this.step = 0;
-      // Thang âm ngũ cung êm dịu (C, D, E, G, A) mang phong cách Á Đông
-      this.pentatonic = [
+      this.notes = [
         261.63, 293.66, 329.63, 392.00, 440.00,
         523.25, 587.33, 659.25, 783.99, 880.00
       ];
-      // Giai điệu nhẹ nhàng
       this.melody = [4, 5, 7, 5, 8, 7, 5, 3, 4, 5, 7, 8, 9, 8, 7, 5];
     }
 
@@ -138,31 +161,33 @@ document.addEventListener('DOMContentLoaded', () => {
       this.isPlaying = true;
       this.step = 0;
       this.scheduleNote();
+      if (bgVideo) {
+        bgVideo.play().catch(() => {});
+      }
     }
 
     stop() {
       this.isPlaying = false;
       if (this.timerId) clearTimeout(this.timerId);
+      if (bgVideo) bgVideo.pause();
     }
 
     scheduleNote() {
       if (!this.isPlaying) return;
       const noteIdx = this.melody[this.step % this.melody.length];
-      const freq = this.pentatonic[noteIdx] || 440;
-      this.playPluck(freq, 1.2);
+      const freq = this.notes[noteIdx] || 440;
+      this.playTone(freq, 1.2, 0.18);
 
-      // Thỉnh thoảng đệm thêm một nốt bass ấm
       if (this.step % 4 === 0) {
-        this.playPluck(freq / 2, 2.0, 0.15);
+        this.playTone(freq / 2, 2.0, 0.12);
       }
 
       this.step++;
-      // Nhịp độ thư giãn, tự nhiên
-      const delay = (this.step % 4 === 3) ? 700 : 450;
+      const delay = (this.step % 4 === 3) ? 650 : 420;
       this.timerId = setTimeout(() => this.scheduleNote(), delay);
     }
 
-    playPluck(freq, duration = 1, volume = 0.2) {
+    playTone(freq, duration = 1, volume = 0.2) {
       if (!this.ctx) return;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -184,19 +209,18 @@ document.addEventListener('DOMContentLoaded', () => {
       this.init();
       if (!this.ctx) return;
       [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-        setTimeout(() => this.playPluck(freq, 1.5, 0.25), i * 90);
+        setTimeout(() => this.playTone(freq, 1.4, 0.22), i * 80);
       });
     }
 
-    playFireworkSound() {
+    playFirework() {
       this.init();
       if (!this.ctx) return;
-      // Âm thanh nổ tách nhẹ của pháo hoa
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.3);
+      osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(35, this.ctx.currentTime + 0.3);
 
       gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
@@ -215,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isNowPlaying) {
       soundIcon.textContent = '🔊';
       btnToggleSound.querySelector('.btn-text').textContent = 'Tắt Nhạc';
-      showToast('Đã bật nhạc nền đêm rằm 🎵');
+      showToast('Đã bật giai điệu Trung Thu 🎵');
     } else {
       soundIcon.textContent = '🎵';
       btnToggleSound.querySelector('.btn-text').textContent = 'Bật Nhạc';
@@ -224,78 +248,376 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ========================================================
-     3. CANVAS TƯƠNG TÁC: PHÁO HOA & ĐÈN ƯỚC (TƯƠNG TÁC THỰC TẾ)
+     3. THIÊN HÀ LỜI CHÚC 3D (3D GALAXY SPHERE ENGINE)
+     (Hệt như cảnh xoay các dòng chữ 3D trong clip TikTok)
      ======================================================== */
-  let width = (canvas.width = window.innerWidth);
-  let height = (canvas.height = window.innerHeight);
+  class GalaxySphere3D {
+    constructor(container, radius = 170) {
+      this.container = container;
+      this.radius = radius;
+      this.items = [];
+      this.angleX = 0;
+      this.angleY = 0;
+      this.speedX = 0.002;
+      this.speedY = 0.003;
+      this.isDragging = false;
+      this.lastMouseX = 0;
+      this.lastMouseY = 0;
+      this.targetSpeedX = 0.002;
+      this.targetSpeedY = 0.003;
 
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
-
-  // Danh sách đèn ước nguyện & tia pháo hoa (chỉ xuất hiện khi tương tác)
-  const wishLanterns = [];
-  const sparks = [];
-
-  class UserWishLantern {
-    constructor(wishText = '') {
-      this.wishText = wishText;
-      this.x = width * 0.5 + (Math.random() * 80 - 40);
-      this.y = height + 30;
-      this.w = 34;
-      this.h = 44;
-      this.speedY = 1.2;
-      this.swayOffset = Math.random() * Math.PI * 2;
-      this.opacity = 1;
+      this.initWords();
+      this.bindEvents();
+      this.animate();
     }
 
-    update() {
-      this.y -= this.speedY;
-      this.swayOffset += 0.02;
-      this.x += Math.sin(this.swayOffset) * 0.8;
-      if (this.y < 100) {
-        this.opacity -= 0.015;
+    initWords() {
+      const receiver = currentParams.to ? decodeURIComponent(currentParams.to) : 'Em Bé';
+      const wordList = [
+        `Gửi ${receiver} 🌕`,
+        'Trung thu vui vẻ',
+        'I love you <3',
+        'Trung thu ấm áp',
+        'Iu em nhiều lắm',
+        'Bình an & hạnh phúc',
+        'Hạnh phúc bên anh',
+        'Mãi là ánh trăng sáng',
+        'Ấm êm từng phút giây',
+        'Trung thu rực rỡ',
+        'Yêu em vô cùng',
+        'Tết Đoàn Viên',
+        'Ngọt ngào như bánh dẻo',
+        'Xinh đẹp như Chị Hằng',
+        '🌕', '🏮', '🐇', '🥮', '❤️', '✨', '💕', '🥰'
+      ];
+
+      if (currentParams.photo) {
+        wordList.push({ type: 'photo', url: decodeURIComponent(currentParams.photo) });
+      }
+
+      this.container.innerHTML = '';
+      const count = wordList.length;
+
+      // Thuật toán Fibonacci Sphere để rải đều các từ trên mặt cầu
+      for (let i = 0; i < count; i++) {
+        const phi = Math.acos(1 - 2 * (i + 0.5) / count);
+        const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+
+        const x = this.radius * Math.sin(phi) * Math.cos(theta);
+        const y = this.radius * Math.sin(phi) * Math.sin(theta);
+        const z = this.radius * Math.cos(phi);
+
+        const el = document.createElement('div');
+        el.className = 'galaxy-tag';
+
+        const item = wordList[i];
+        if (typeof item === 'object' && item.type === 'photo') {
+          el.classList.add('photo-tag');
+          const img = document.createElement('img');
+          img.src = item.url;
+          el.appendChild(img);
+        } else if (['🌕', '🏮', '🐇', '🥮', '❤️', '✨', '💕', '🥰'].includes(item)) {
+          el.classList.add('emoji-tag');
+          el.textContent = item;
+        } else {
+          el.textContent = item;
+          if (item.includes(receiver) || item.includes('I love you')) {
+            el.classList.add('highlight');
+          }
+        }
+
+        this.container.appendChild(el);
+        this.items.push({ el, x, y, z });
       }
     }
 
-    draw() {
-      ctx.save();
-      ctx.translate(this.x, this.y);
-      ctx.globalAlpha = Math.max(0, this.opacity);
+    bindEvents() {
+      const target = galaxyViewport || this.container;
 
-      // Thân đèn lồng màu đỏ cam truyền thống
-      ctx.fillStyle = '#c53030';
-      ctx.beginPath();
-      ctx.roundRect(-this.w * 0.5, -this.h * 0.5, this.w, this.h, 6);
-      ctx.fill();
+      // Chuột
+      target.addEventListener('mousedown', (e) => {
+        this.isDragging = true;
+        this.lastMouseX = e.clientX;
+        this.lastMouseY = e.clientY;
+      });
 
-      // Đáy đèn màu vàng ấm
-      ctx.fillStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.arc(0, this.h * 0.4, 4, 0, Math.PI * 2);
-      ctx.fill();
+      window.addEventListener('mousemove', (e) => {
+        if (!this.isDragging) return;
+        const dx = e.clientX - this.lastMouseX;
+        const dy = e.clientY - this.lastMouseY;
+        this.speedY = dx * 0.0004;
+        this.speedX = -dy * 0.0004;
+        this.lastMouseX = e.clientX;
+        this.lastMouseY = e.clientY;
+      });
 
-      // Nhãn điều ước
-      if (this.wishText) {
-        ctx.fillStyle = '#1f2937';
-        ctx.font = '600 12px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`🏮 ${this.wishText}`, 0, -this.h * 0.65);
+      window.addEventListener('mouseup', () => {
+        this.isDragging = false;
+      });
+
+      // Chạm cảm ứng trên điện thoại
+      target.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0]) {
+          this.isDragging = true;
+          this.lastMouseX = e.touches[0].clientX;
+          this.lastMouseY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!this.isDragging || !e.touches || !e.touches[0]) return;
+        const dx = e.touches[0].clientX - this.lastMouseX;
+        const dy = e.touches[0].clientY - this.lastMouseY;
+        this.speedY = dx * 0.0005;
+        this.speedX = -dy * 0.0005;
+        this.lastMouseX = e.touches[0].clientX;
+        this.lastMouseY = e.touches[0].clientY;
+      }, { passive: true });
+
+      window.addEventListener('touchend', () => {
+        this.isDragging = false;
+      });
+    }
+
+    rotateX(angle) {
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      for (let item of this.items) {
+        const y = item.y * cos - item.z * sin;
+        const z = item.y * sin + item.z * cos;
+        item.y = y;
+        item.z = z;
+      }
+    }
+
+    rotateY(angle) {
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      for (let item of this.items) {
+        const x = item.x * cos + item.z * sin;
+        const z = -item.x * sin + item.z * cos;
+        item.x = x;
+        item.z = z;
+      }
+    }
+
+    animate() {
+      // Dần dần hồi phục tốc độ quay tự nhiên khi nhả tay
+      if (!this.isDragging) {
+        this.speedX += (this.targetSpeedX - this.speedX) * 0.05;
+        this.speedY += (this.targetSpeedY - this.speedY) * 0.05;
       }
 
-      ctx.restore();
+      this.rotateX(this.speedX);
+      this.rotateY(this.speedY);
+
+      // Cập nhật vị trí hiển thị và độ sâu
+      for (let item of this.items) {
+        const perspective = 350;
+        const scale = perspective / (perspective + item.z);
+        const alpha = Math.max(0.2, (item.z + this.radius) / (2 * this.radius) * 0.8 + 0.2);
+
+        item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, ${item.z}px) scale(${scale})`;
+        item.el.style.opacity = alpha;
+        item.el.style.zIndex = Math.floor(item.z + this.radius);
+      }
+
+      requestAnimationFrame(() => this.animate());
     }
   }
 
-  // Hiệu ứng pháo hoa khi người dùng click/chạm
+  let galaxyInstance = null;
+
+  /* ========================================================
+     4. TRÁI TIM ÁNH SÁNG VÀNG LẤP LÁNH (SPARKLING HEART CANVAS)
+     (Cảnh kết thúc lãng mạn trong video TikTok)
+     ======================================================== */
+  class SparklingHeart {
+    constructor(canvas) {
+      this.canvas = canvas;
+      if (!this.canvas) return;
+      this.ctx = canvas.getContext('2d');
+      this.particles = [];
+      this.ringParticles = [];
+      this.init();
+      this.animate();
+    }
+
+    init() {
+      this.width = this.canvas.width = 280;
+      this.height = this.canvas.height = 280;
+
+      // Tạo các hạt chạy dọc theo đường cong trái tim
+      const particleCount = 75;
+      for (let i = 0; i < particleCount; i++) {
+        this.particles.push({
+          t: Math.random() * Math.PI * 2,
+          speed: Math.random() * 0.015 + 0.008,
+          size: Math.random() * 2.5 + 1.2,
+          glow: Math.random() * 15 + 5,
+          color: Math.random() > 0.3 ? '#ffd166' : '#ff4d6d'
+        });
+      }
+
+      // Tạo hạt quay theo vòng tròn halo quanh ảnh
+      for (let i = 0; i < 40; i++) {
+        this.ringParticles.push({
+          angle: Math.random() * Math.PI * 2,
+          speed: (Math.random() * 0.02 + 0.01) * (Math.random() > 0.5 ? 1 : -1),
+          radius: Math.random() * 15 + 105,
+          size: Math.random() * 2 + 1,
+          color: '#ffea79'
+        });
+      }
+    }
+
+    getHeartPoint(t, scale = 7.5) {
+      // Phương trình toán học tạo hình trái tim
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+      return {
+        x: this.width / 2 + x * scale,
+        y: this.height / 2 - 10 + y * scale
+      };
+    }
+
+    animate() {
+      this.ctx.clearRect(0, 0, this.width, this.height);
+
+      // Vẽ các hạt trên viền trái tim
+      for (let p of this.particles) {
+        p.t += p.speed;
+        if (p.t > Math.PI * 2) p.t -= Math.PI * 2;
+        const pt = this.getHeartPoint(p.t);
+
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(pt.x, pt.y, p.size, 0, Math.PI * 2);
+        this.ctx.fillStyle = p.color;
+        this.ctx.shadowColor = p.color;
+        this.ctx.shadowBlur = p.glow;
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+
+      // Vẽ các hạt lấp lánh xoay quanh vòng halo
+      for (let rp of this.ringParticles) {
+        rp.angle += rp.speed;
+        const rx = this.width / 2 + Math.cos(rp.angle) * rp.radius;
+        const ry = this.height / 2 + Math.sin(rp.angle) * (rp.radius * 0.4);
+
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(rx, ry, rp.size, 0, Math.PI * 2);
+        this.ctx.fillStyle = rp.color;
+        this.ctx.shadowColor = '#ffd166';
+        this.ctx.shadowBlur = 8;
+        this.ctx.fill();
+        this.ctx.restore();
+      }
+
+      requestAnimationFrame(() => this.animate());
+    }
+  }
+
+  let heartInstance = null;
+
+  /* ========================================================
+     5. ĐIỀU HƯỚNG CHUYỂN CẢNH (STAGE NAVIGATION)
+     ======================================================== */
+  function goToGalaxyStage() {
+    sound.init();
+    sound.playChime();
+
+    // Hiệu ứng pháo giấy tưng bừng khi mở cổng vũ trụ
+    if (typeof confetti === 'function') {
+      confetti({
+        particleCount: 70,
+        spread: 80,
+        origin: { y: 0.55 },
+        colors: ['#ffd166', '#ff4d6d', '#06d6a0', '#ffea79']
+      });
+    }
+
+    // Tự động bật nhạc nếu chưa bật
+    if (!sound.isPlaying) {
+      sound.play();
+      soundIcon.textContent = '🔊';
+      btnToggleSound.querySelector('.btn-text').textContent = 'Tắt Nhạc';
+    }
+
+    // Ẩn trăng, hiện thiên hà 3D
+    stageMoon.classList.add('hidden');
+    stageGalaxy.classList.remove('hidden');
+    stageCard.classList.add('hidden');
+    stageHeart.classList.add('hidden');
+
+    if (!galaxyInstance) {
+      galaxyInstance = new GalaxySphere3D(galaxySphere, 175);
+    }
+
+    showToast('✨ Vuốt trên màn hình để xoay thiên hà lời chúc!');
+  }
+
+  // Chạm vào mặt trăng hoặc nút để vào thiên hà
+  starLanternHero.addEventListener('click', goToGalaxyStage);
+  btnOpenLetter.addEventListener('click', goToGalaxyStage);
+
+  // Mở bức thư từ thiên hà
+  btnViewLetter.addEventListener('click', () => {
+    sound.playChime();
+    stageCard.classList.remove('hidden');
+  });
+
+  // Đóng bức thư quay lại thiên hà
+  btnCloseCard.addEventListener('click', () => {
+    stageCard.classList.add('hidden');
+  });
+
+  // Mở cảnh Trái Tim Ánh Sáng từ thiên hà
+  btnViewHeart.addEventListener('click', () => {
+    sound.playChime();
+    stageGalaxy.classList.add('hidden');
+    stageCard.classList.add('hidden');
+    stageHeart.classList.remove('hidden');
+
+    if (!heartInstance && heartCanvas) {
+      heartInstance = new SparklingHeart(heartCanvas);
+    }
+  });
+
+  // Về lại thiên hà từ trái tim
+  btnBackToGalaxy.addEventListener('click', () => {
+    stageHeart.classList.add('hidden');
+    stageGalaxy.classList.remove('hidden');
+  });
+
+  // Đọc lại bức thư từ trái tim
+  btnReReadLetter.addEventListener('click', () => {
+    stageHeart.classList.add('hidden');
+    stageCard.classList.remove('hidden');
+  });
+
+  /* ========================================================
+     6. PHÁO HOA TƯƠNG TÁC TRÊN SKY CANVAS
+     ======================================================== */
+  let width = (skyCanvas.width = window.innerWidth);
+  let height = (skyCanvas.height = window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    width = skyCanvas.width = window.innerWidth;
+    height = skyCanvas.height = window.innerHeight;
+  });
+
+  const sparks = [];
+
   function createFireworkSparks(x, y) {
-    sound.playFireworkSound();
-    const count = 30;
-    const colors = ['#c53030', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
+    sound.playFirework();
+    const count = 35;
+    const colors = ['#ffd166', '#ff4d6d', '#34d399', '#60a5fa', '#f59e0b'];
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 / count) * i + Math.random() * 0.2;
-      const speed = Math.random() * 4 + 1.5;
+      const speed = Math.random() * 4.5 + 2;
       sparks.push({
         x,
         y,
@@ -303,32 +625,20 @@ document.addEventListener('DOMContentLoaded', () => {
         vy: Math.sin(angle) * speed,
         alpha: 1,
         color: colors[Math.floor(Math.random() * colors.length)],
-        decay: Math.random() * 0.025 + 0.02,
+        decay: Math.random() * 0.025 + 0.015,
         radius: Math.random() * 2 + 1.2
       });
     }
   }
 
-  // Animation Loop: Chỉ chạy khi có hạt cần render
   function renderSky() {
-    ctx.clearRect(0, 0, width, height);
+    skyCtx.clearRect(0, 0, width, height);
 
-    // Vẽ đèn ước
-    for (let i = wishLanterns.length - 1; i >= 0; i--) {
-      const l = wishLanterns[i];
-      l.update();
-      l.draw();
-      if (l.opacity <= 0 || l.y < -50) {
-        wishLanterns.splice(i, 1);
-      }
-    }
-
-    // Vẽ pháo hoa
     for (let i = sparks.length - 1; i >= 0; i--) {
       const sp = sparks[i];
       sp.x += sp.vx;
       sp.y += sp.vy;
-      sp.vy += 0.08; // Trọng lực nhẹ
+      sp.vy += 0.07;
       sp.alpha -= sp.decay;
 
       if (sp.alpha <= 0) {
@@ -336,78 +646,37 @@ document.addEventListener('DOMContentLoaded', () => {
         continue;
       }
 
-      ctx.beginPath();
-      ctx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
-      ctx.fillStyle = sp.color;
-      ctx.globalAlpha = sp.alpha;
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      skyCtx.beginPath();
+      skyCtx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
+      skyCtx.fillStyle = sp.color;
+      skyCtx.globalAlpha = sp.alpha;
+      skyCtx.fill();
+      skyCtx.globalAlpha = 1;
     }
 
     requestAnimationFrame(renderSky);
   }
   requestAnimationFrame(renderSky);
 
-  // Chạm/Click bất kỳ vào canvas để bắn pháo hoa
-  canvas.addEventListener('click', (e) => {
+  skyCanvas.addEventListener('click', (e) => {
     createFireworkSparks(e.clientX, e.clientY);
   });
-  canvas.addEventListener('touchstart', (e) => {
-    if (e.touches && e.touches[0]) {
-      createFireworkSparks(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: true });
 
-  /* ========================================================
-     4. MỞ THIỆP & TƯƠNG TÁC CHÍNH
-     ======================================================== */
-  function openLetter() {
-    sound.init();
-    sound.playChime();
-
-    // Hiệu ứng pháo giấy confetti tưng bừng
-    if (typeof confetti === 'function') {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#ffd166', '#ff3b5c', '#06d6a0', '#118ab2', '#ffea79']
-      });
-    }
-
-    // Chuyển từ màn hình chờ sang bức thiệp 3D
-    envelopeSection.classList.add('hidden');
-    cardSection.classList.remove('hidden');
-
-    // Tự động bật nhạc nhẹ nếu chưa bật
-    if (!sound.isPlaying) {
-      sound.play();
-      soundIcon.textContent = '🔊';
-      btnToggleSound.querySelector('.btn-text').textContent = 'Tắt Nhạc';
-    }
-
-    showToast('🌕 Chúc bạn một mùa Trung Thu ấm áp, viên mãn!');
-  }
-
-  starLanternHero.addEventListener('click', openLetter);
-  btnOpenLetter.addEventListener('click', openLetter);
-
-  // Nút bắn pháo hoa từ thanh công cụ
   btnFireworks.addEventListener('click', () => {
     if (typeof confetti === 'function') {
       confetti({
-        particleCount: 120,
-        spread: 90,
+        particleCount: 100,
+        spread: 80,
         origin: { y: 0.5 },
-        colors: ['#ffd166', '#ff4d6d', '#ff9f1c', '#ffffff']
+        colors: ['#ffd166', '#ff4d6d', '#ffea79', '#38bdf8']
       });
     }
-    createFireworkSparks(width * 0.3, height * 0.35);
-    createFireworkSparks(width * 0.7, height * 0.3);
+    createFireworkSparks(width * 0.35, height * 0.35);
+    createFireworkSparks(width * 0.65, height * 0.3);
   });
 
   /* ========================================================
-     5. TẠO MÃ QR THIỆP TRUNG THU CÁ NHÂN HÓA (ĐU TREND TIKTOK)
+     7. TẠO MÃ QR THIỆP CÁ NHÂN HÓA (ĐU TREND TIKTOK)
      ======================================================== */
   function openCreatorModal() {
     modalCreator.classList.remove('hidden');
@@ -425,11 +694,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === modalCreator) closeCreatorModal();
   });
 
-  // Xử lý tạo mã QR khi bấm "Sinh Mã QR Ngay"
   btnGenerateQr.addEventListener('click', () => {
     const receiver = document.getElementById('input-receiver').value.trim();
     const message = document.getElementById('input-message').value.trim();
     const sender = document.getElementById('input-sender').value.trim();
+    const photo = document.getElementById('input-photo').value.trim();
 
     if (!receiver) {
       showToast('⚠️ Vui lòng nhập tên người nhận!');
@@ -437,38 +706,33 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Xây dựng link với query parameters
     const currentBaseUrl = window.location.origin + window.location.pathname;
     const urlParams = new URLSearchParams();
     urlParams.set('to', receiver);
     if (message) urlParams.set('msg', message);
     if (sender) urlParams.set('from', sender);
+    if (photo) urlParams.set('photo', photo);
 
     generatedShareUrl = `${currentBaseUrl}?${urlParams.toString()}`;
 
-    // Xóa mã QR cũ nếu có
     qrcodeDisplay.innerHTML = '';
 
-    // Tạo mã QR mới bằng QRCode.js
     if (typeof QRCode !== 'undefined') {
       qrCodeInstance = new QRCode(qrcodeDisplay, {
         text: generatedShareUrl,
         width: 190,
         height: 190,
-        colorDark: '#0b0f2a',
+        colorDark: '#0e122b',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
       });
 
       qrResultContainer.classList.remove('hidden');
       copyStatus.classList.add('hidden');
-      showToast('✨ Đã tạo mã QR thành công!');
-    } else {
-      showToast('⚠️ Không thể tải thư viện QR, hãy thử lại.');
+      showToast('✨ Đã sinh mã QR thiên hà 3D thành công!');
     }
   });
 
-  // Tải ảnh mã QR về máy
   btnDownloadQr.addEventListener('click', () => {
     const img = qrcodeDisplay.querySelector('img');
     const canvasEl = qrcodeDisplay.querySelector('canvas');
@@ -487,42 +751,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const downloadLink = document.createElement('a');
     downloadLink.href = dataUrl;
-    downloadLink.download = `Thiep_Trung_Thu_QR_${Date.now()}.png`;
+    downloadLink.download = `Thiep_Trung_Thu_3D_${Date.now()}.png`;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
     showToast('📥 Đã tải ảnh mã QR về máy!');
   });
 
-  // Copy link
   btnCopyLink.addEventListener('click', async () => {
     if (!generatedShareUrl) return;
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(generatedShareUrl);
       } else {
-        const tempInput = document.createElement('input');
-        tempInput.value = generatedShareUrl;
-        document.body.appendChild(tempInput);
-        tempInput.select();
+        const temp = document.createElement('input');
+        temp.value = generatedShareUrl;
+        document.body.appendChild(temp);
+        temp.select();
         document.execCommand('copy');
-        document.body.removeChild(tempInput);
+        document.body.removeChild(temp);
       }
       copyStatus.classList.remove('hidden');
       showToast('📋 Đã sao chép link thiệp!');
     } catch (err) {
-      showToast('⚠️ Không thể sao chép link tự động.');
+      showToast('⚠️ Không thể sao chép tự động.');
     }
   });
 
-  // Xem thử thiệp vừa tạo
   btnTestPreview.addEventListener('click', () => {
     if (!generatedShareUrl) return;
     window.location.href = generatedShareUrl;
   });
 
   /* ========================================================
-     6. MÁY QUÉT MÃ QR BẰNG CAMERA TRỰC TIẾP TRÊN WEB
+     8. QUÉT MÃ QR BẰNG CAMERA & AUTO CHUYỂN CẢNH
      ======================================================== */
   function openScannerModal() {
     modalScanner.classList.remove('hidden');
@@ -561,92 +823,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     html5QrCodeScanner
       .start(
-        { facingMode: 'environment' }, // Ưu tiên camera sau trên điện thoại
+        { facingMode: 'environment' },
         config,
-        (decodedText) => {
-          // Khi quét trúng mã QR!
-          onQrCodeScanned(decodedText);
-        },
-        () => {
-          // Quét liên tục từng frame (không cần log lỗi)
-        }
+        (decodedText) => onQrCodeScanned(decodedText),
+        () => {}
       )
       .then(() => {
         isScanning = true;
-        scannerResultMsg.textContent = 'Đã kết nối camera! Hãy đưa mã QR vào khung quét.';
+        scannerResultMsg.textContent = 'Đã kết nối camera! Hãy đưa mã QR vào khung.';
       })
       .catch((err) => {
         isScanning = false;
         scannerResultMsg.textContent = 'Không thể mở camera. Vui lòng cấp quyền truy cập camera trên trình duyệt!';
-        console.error('Camera Error: ', err);
       });
   }
 
   function stopQrScanner() {
     if (html5QrCodeScanner && isScanning) {
-      html5QrCodeScanner
-        .stop()
-        .then(() => {
-          isScanning = false;
-          html5QrCodeScanner.clear();
-        })
-        .catch((err) => {
-          console.warn('Lỗi khi dừng camera:', err);
-          isScanning = false;
-        });
+      html5QrCodeScanner.stop().then(() => {
+        isScanning = false;
+        html5QrCodeScanner.clear();
+      }).catch(() => {
+        isScanning = false;
+      });
     }
   }
 
   function onQrCodeScanned(decodedText) {
     sound.playChime();
-    scannerResultMsg.textContent = `🎉 Đã nhận diện mã: ${decodedText.substring(0, 35)}...`;
-
-    // Dừng camera
+    scannerResultMsg.textContent = `🎉 Quét mã thành công!`;
     stopQrScanner();
 
     setTimeout(() => {
       closeScannerModal();
 
-      // Nếu quét được link của chính website này hoặc URL có chứa tham số thiệp
       try {
         if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
           const scannedUrl = new URL(decodedText);
           const to = scannedUrl.searchParams.get('to');
           const from = scannedUrl.searchParams.get('from');
           const msg = scannedUrl.searchParams.get('msg');
+          const photo = scannedUrl.searchParams.get('photo');
 
-          if (to || msg || from) {
-            // Cập nhật nội dung thiệp ngay lập tức mà không cần tải lại trang
+          if (to || msg || from || photo) {
             if (to) {
               cardReceiverName.textContent = decodeURIComponent(to);
-              recipientGreetingIntro.textContent = `${decodeURIComponent(to)} ơi, có một bức thư bí mật dành cho bạn! ✨`;
+              currentParams.to = to;
             }
             if (from) cardSenderName.textContent = `${decodeURIComponent(from)} 🏮`;
             if (msg) cardLetterBody.textContent = `"${decodeURIComponent(msg)}"`;
+            if (photo && couplePhotoImg) {
+              couplePhotoImg.src = decodeURIComponent(photo);
+              currentParams.photo = photo;
+            }
 
-            openLetter();
-            showToast('🌕 Đã mở bức thiệp bí mật từ mã QR thành công!');
+            // Tự động nhảy thẳng vào Thiên Hà Lời Chúc 3D!
+            goToGalaxyStage();
+            showToast('🌕 Đã mở thiệp Trung Thu 3D từ mã QR!');
             return;
           } else {
-            // Nếu là link khác, hỏi người dùng mở link
             window.location.href = decodedText;
             return;
           }
         }
-      } catch (e) {
-        // Không phải URL hợp lệ, hiển thị như tin nhắn bí mật
-      }
+      } catch (e) {}
 
-      // Nếu quét ra dạng chữ / text bình thường:
+      // Nếu là text thông thường
       cardLetterBody.textContent = `"${decodedText}"`;
-      cardReceiverName.textContent = 'Bạn';
-      openLetter();
-      showToast('💌 Đã giải mã thông điệp bí mật từ mã QR!');
-    }, 600);
+      goToGalaxyStage();
+      showToast('💌 Đã giải mã thông điệp!');
+    }, 500);
   }
 
   /* ========================================================
-     7. THẢ ĐÈN TRỜI NGUYỆN ƯỚC
+     9. THẢ ĐÈN TRỜI ƯỚC NGUYỆN
      ======================================================== */
   btnMakeWish.addEventListener('click', () => {
     modalWish.classList.remove('hidden');
@@ -668,28 +918,24 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Tạo chiếc đèn trời đặc biệt mang điều ước
-    const wishLantern = new UserWishLantern(wishText);
-    wishLanterns.push(wishLantern);
-
     sound.playChime();
     modalWish.classList.add('hidden');
     inputWishText.value = '';
 
     if (typeof confetti === 'function') {
       confetti({
-        particleCount: 50,
-        spread: 60,
+        particleCount: 60,
+        spread: 70,
         origin: { y: 0.8 },
-        colors: ['#ffd166', '#ffea79']
+        colors: ['#ffd166', '#ffea79', '#ff4d6d']
       });
     }
 
-    showToast('🏮 Chiếc đèn trời nguyện ước của bạn đã được thả lên bầu trăng rằm!');
+    showToast(`🏮 Điều ước "${wishText}" đã được thả lên đêm trăng rằm!`);
   });
 
   /* ========================================================
-     8. TOAST THÔNG BÁO NHẸ
+     10. TOAST THÔNG BÁO
      ======================================================== */
   let toastTimer = null;
   function showToast(message) {
