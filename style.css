@@ -407,6 +407,113 @@ body {
 }
 
 /* ========================================================
+   4 ẢNH KỶ NIỆM ORBIT QUANH MẶT TRĂNG
+   ======================================================== */
+.moon-photo-orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Mỗi ảnh được định vị theo góc (--orbit-angle) trên vòng quỹ đạo */
+.orbit-photo {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+
+  /* Tâm container là trung tâm mặt trăng, đẩy ra ngoài theo hướng góc */
+  top: 50%;
+  left: 50%;
+
+  /* Bán kính quỹ đạo = 175px từ tâm; offset để ảnh căn giữa */
+  transform:
+    rotate(var(--orbit-angle))
+    translateX(175px)
+    rotate(calc(-1 * var(--orbit-angle)));
+
+  animation:
+    orbitFloat 3.2s ease-in-out infinite var(--orbit-delay);
+}
+
+@keyframes orbitFloat {
+  0%, 100% { margin-top: -45px; }
+  50%       { margin-top: calc(-45px - 10px); }
+}
+
+/* Vòng vàng xoay phía sau ảnh */
+.orbit-photo::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ffd166 0%, #fff8c5 30%, #f59e0b 55%, #ffd166 80%, #fff3a3 100%
+  );
+  animation: orbit-ring-spin 3s linear infinite;
+  z-index: 0;
+}
+
+@keyframes orbit-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hào quang pulse phía sau */
+.orbit-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,209,102,0.5) 0%, transparent 68%);
+  animation: orbit-glow-pulse 2.4s ease-in-out infinite var(--orbit-delay);
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes orbit-glow-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.2); }
+}
+
+/* Ảnh tròn thực sự */
+.orbit-photo img {
+  position: relative;
+  z-index: 1;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 20px rgba(255, 209, 102, 0.8),
+    0 0 50px rgba(255, 209, 102, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.5);
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+/* Responsive: thu nhỏ trên điện thoại nhỏ */
+@media (max-width: 480px) {
+  .orbit-photo {
+    width: 70px;
+    height: 70px;
+    transform:
+      rotate(var(--orbit-angle))
+      translateX(138px)
+      rotate(calc(-1 * var(--orbit-angle)));
+  }
+  .orbit-photo img {
+    width: 70px;
+    height: 70px;
+  }
+  @keyframes orbitFloat {
+    0%, 100% { margin-top: -35px; }
+    50%       { margin-top: calc(-35px - 8px); }
+  }
+}
+
+/* ========================================================
    GIAI ĐOẠN 2: THIÊN HÀ LỜI CHÚC 3D (3D Wishes Galaxy)
    (Cảnh xoay 3D các lời chúc lơ lửng trong không gian vũ trụ)
    ======================================================== */
