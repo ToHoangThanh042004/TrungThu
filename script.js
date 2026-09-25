@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ========================================================
-     3. CANVAS BẦU TRỜI: ĐÈN TRỜI, SAO BĂNG, PHÁO HOA
+     3. CANVAS TƯƠNG TÁC: PHÁO HOA & ĐÈN ƯỚC (TƯƠNG TÁC THỰC TẾ)
      ======================================================== */
   let width = (canvas.width = window.innerWidth);
   let height = (canvas.height = window.innerHeight);
@@ -232,210 +232,103 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
-    initStars();
   });
 
-  // Hạt sao lấp lánh
-  const stars = [];
-  function initStars() {
-    stars.length = 0;
-    const numStars = Math.floor((width * height) / 3800);
-    for (let i = 0; i < numStars; i++) {
-      stars.push({
-        x: Math.random() * width,
-        y: Math.random() * height * 0.85,
-        radius: Math.random() * 1.5 + 0.3,
-        alpha: Math.random() * 0.8 + 0.2,
-        twinkleSpeed: Math.random() * 0.02 + 0.005,
-      });
-    }
-  }
-  initStars();
+  // Danh sách đèn ước nguyện & tia pháo hoa (chỉ xuất hiện khi tương tác)
+  const wishLanterns = [];
+  const sparks = [];
 
-  // Đèn trời (Sky Lanterns)
-  const lanterns = [];
-  const maxLanterns = 22;
-
-  class SkyLantern {
-    constructor(isWish = false, wishText = '') {
-      this.isWish = isWish;
+  class UserWishLantern {
+    constructor(wishText = '') {
       this.wishText = wishText;
-      this.reset(true);
-    }
-
-    reset(initial = false) {
-      this.x = Math.random() * width;
-      this.y = initial ? Math.random() * height : height + 50 + Math.random() * 60;
-      this.w = this.isWish ? (Math.random() * 10 + 36) : (Math.random() * 14 + 20);
-      this.h = this.w * 1.35;
-      this.speedY = Math.random() * 0.45 + 0.35;
+      this.x = width * 0.5 + (Math.random() * 80 - 40);
+      this.y = height + 30;
+      this.w = 34;
+      this.h = 44;
+      this.speedY = 1.2;
       this.swayOffset = Math.random() * Math.PI * 2;
-      this.swaySpeed = Math.random() * 0.015 + 0.008;
-      this.swayDistance = Math.random() * 1.2 + 0.6;
-      this.opacity = Math.random() * 0.3 + 0.65;
-      this.colorHue = Math.random() > 0.3 ? 38 : 12; // Vàng ấm hoặc đỏ cam
+      this.opacity = 1;
     }
 
     update() {
       this.y -= this.speedY;
-      this.swayOffset += this.swaySpeed;
-      this.x += Math.sin(this.swayOffset) * this.swayDistance;
-
-      if (this.y < -80) {
-        if (this.isWish) {
-          // Xóa đèn ước khi bay khuất
-          const idx = lanterns.indexOf(this);
-          if (idx !== -1) lanterns.splice(idx, 1);
-        } else {
-          this.reset(false);
-        }
+      this.swayOffset += 0.02;
+      this.x += Math.sin(this.swayOffset) * 0.8;
+      if (this.y < 100) {
+        this.opacity -= 0.015;
       }
     }
 
     draw() {
       ctx.save();
       ctx.translate(this.x, this.y);
+      ctx.globalAlpha = Math.max(0, this.opacity);
 
-      // Ánh sáng phát quang xung quanh đèn
-      const glowGrad = ctx.createRadialGradient(0, 0, this.w * 0.2, 0, 0, this.w * 1.8);
-      glowGrad.addColorStop(0, `hsla(${this.colorHue}, 100%, 70%, ${this.opacity * 0.6})`);
-      glowGrad.addColorStop(1, 'transparent');
-      ctx.fillStyle = glowGrad;
+      // Thân đèn lồng màu đỏ cam truyền thống
+      ctx.fillStyle = '#c53030';
       ctx.beginPath();
-      ctx.arc(0, 0, this.w * 1.8, 0, Math.PI * 2);
+      ctx.roundRect(-this.w * 0.5, -this.h * 0.5, this.w, this.h, 6);
       ctx.fill();
 
-      // Thân đèn lồng (hình thang vòm)
+      // Đáy đèn màu vàng ấm
+      ctx.fillStyle = '#f59e0b';
       ctx.beginPath();
-      ctx.moveTo(-this.w * 0.35, this.h * 0.5);
-      ctx.quadraticCurveTo(-this.w * 0.55, 0, -this.w * 0.4, -this.h * 0.45);
-      ctx.quadraticCurveTo(0, -this.h * 0.55, this.w * 0.4, -this.h * 0.45);
-      ctx.quadraticCurveTo(this.w * 0.55, 0, this.w * 0.35, this.h * 0.5);
-      ctx.closePath();
-
-      const bodyGrad = ctx.createLinearGradient(0, -this.h * 0.5, 0, this.h * 0.5);
-      bodyGrad.addColorStop(0, `hsla(${this.colorHue}, 90%, 55%, ${this.opacity})`);
-      bodyGrad.addColorStop(0.7, `hsla(${this.colorHue + 10}, 100%, 75%, ${this.opacity})`);
-      bodyGrad.addColorStop(1, `hsla(15, 100%, 60%, ${this.opacity})`);
-      ctx.fillStyle = bodyGrad;
+      ctx.arc(0, this.h * 0.4, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // Ngọn lửa nhỏ đáy đèn
-      const flicker = Math.sin(Date.now() * 0.02 + this.swayOffset) * 2;
-      ctx.beginPath();
-      ctx.arc(0, this.h * 0.4, (this.w * 0.16) + flicker * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = '#ffeaa7';
-      ctx.shadowBlur = 10;
-      ctx.fill();
-
-      // Nếu là đèn ước nguyện -> Vẽ chữ điều ước đính kèm
-      if (this.isWish && this.wishText) {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#ffd166';
-        ctx.font = '600 11px Montserrat';
+      // Nhãn điều ước
+      if (this.wishText) {
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '600 12px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`✨ ${this.wishText}`, 0, -this.h * 0.65);
+        ctx.fillText(`🏮 ${this.wishText}`, 0, -this.h * 0.65);
       }
 
       ctx.restore();
     }
   }
 
-  // Khởi tạo đèn trời ban đầu
-  for (let i = 0; i < maxLanterns; i++) {
-    lanterns.push(new SkyLantern());
-  }
-
-  // Sao băng (Shooting stars)
-  const shootingStars = [];
-  function spawnShootingStar() {
-    shootingStars.push({
-      x: Math.random() * width * 0.8,
-      y: Math.random() * height * 0.4,
-      length: Math.random() * 80 + 40,
-      speed: Math.random() * 10 + 12,
-      angle: (Math.PI / 4) + (Math.random() * 0.2 - 0.1),
-      opacity: 1,
-    });
-  }
-  setInterval(() => {
-    if (Math.random() > 0.4) spawnShootingStar();
-  }, 4500);
-
-  // Hiệu ứng pháo hoa tia sáng
-  const sparks = [];
+  // Hiệu ứng pháo hoa khi người dùng click/chạm
   function createFireworkSparks(x, y) {
     sound.playFireworkSound();
-    const count = 40;
-    const hue = Math.floor(Math.random() * 360);
+    const count = 30;
+    const colors = ['#c53030', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 / count) * i + Math.random() * 0.2;
-      const speed = Math.random() * 5 + 2;
+      const speed = Math.random() * 4 + 1.5;
       sparks.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         alpha: 1,
-        color: `hsl(${hue + Math.random() * 40}, 100%, 65%)`,
-        decay: Math.random() * 0.02 + 0.015,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        decay: Math.random() * 0.025 + 0.02,
         radius: Math.random() * 2 + 1.2
       });
     }
   }
 
-  // Animation Loop chính
+  // Animation Loop: Chỉ chạy khi có hạt cần render
   function renderSky() {
     ctx.clearRect(0, 0, width, height);
 
-    // Vẽ sao lấp lánh
-    for (let s of stars) {
-      s.alpha += s.twinkleSpeed;
-      if (s.alpha > 1 || s.alpha < 0.2) s.twinkleSpeed = -s.twinkleSpeed;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
-      ctx.fill();
-    }
-
-    // Vẽ sao băng
-    for (let i = shootingStars.length - 1; i >= 0; i--) {
-      const ss = shootingStars[i];
-      ss.x += Math.cos(ss.angle) * ss.speed;
-      ss.y += Math.sin(ss.angle) * ss.speed;
-      ss.opacity -= 0.025;
-
-      if (ss.opacity <= 0) {
-        shootingStars.splice(i, 1);
-        continue;
+    // Vẽ đèn ước
+    for (let i = wishLanterns.length - 1; i >= 0; i--) {
+      const l = wishLanterns[i];
+      l.update();
+      l.draw();
+      if (l.opacity <= 0 || l.y < -50) {
+        wishLanterns.splice(i, 1);
       }
-
-      ctx.save();
-      ctx.strokeStyle = `rgba(255, 234, 167, ${ss.opacity})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(ss.x, ss.y);
-      ctx.lineTo(
-        ss.x - Math.cos(ss.angle) * ss.length,
-        ss.y - Math.sin(ss.angle) * ss.length
-      );
-      ctx.stroke();
-      ctx.restore();
     }
 
-    // Vẽ đèn trời
-    for (let lantern of lanterns) {
-      lantern.update();
-      lantern.draw();
-    }
-
-    // Vẽ các tia pháo hoa
+    // Vẽ pháo hoa
     for (let i = sparks.length - 1; i >= 0; i--) {
       const sp = sparks[i];
       sp.x += sp.vx;
       sp.y += sp.vy;
-      sp.vy += 0.06; // Trọng lực nhẹ
+      sp.vy += 0.08; // Trọng lực nhẹ
       sp.alpha -= sp.decay;
 
       if (sp.alpha <= 0) {
@@ -776,11 +669,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Tạo chiếc đèn trời đặc biệt mang điều ước
-    const wishLantern = new SkyLantern(true, wishText);
-    wishLantern.x = width * 0.5 + (Math.random() * 80 - 40);
-    wishLantern.y = height + 40;
-    wishLantern.speedY = 1.1; // Bay lên nhanh hơn
-    lanterns.push(wishLantern);
+    const wishLantern = new UserWishLantern(wishText);
+    wishLanterns.push(wishLantern);
 
     sound.playChime();
     modalWish.classList.add('hidden');
