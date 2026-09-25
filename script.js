@@ -258,13 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
       this.items = [];
       this.angleX = 0;
       this.angleY = 0;
-      this.speedX = 0.002;
-      this.speedY = 0.003;
+      this.speedX = 0.005;
+      this.speedY = 0.007;
       this.isDragging = false;
       this.lastMouseX = 0;
       this.lastMouseY = 0;
-      this.targetSpeedX = 0.002;
-      this.targetSpeedY = 0.003;
+      this.targetSpeedX = 0.005;
+      this.targetSpeedY = 0.007;
 
       this.initWords();
       this.bindEvents();
@@ -675,7 +675,9 @@ document.addEventListener('DOMContentLoaded', () => {
     stageHeart.classList.add('hidden');
 
     if (!galaxyInstance) {
-      galaxyInstance = new GalaxySphere3D(galaxySphere, 175);
+      // Tự động giảm radius trên mobile để vừa màn hình
+    const isMobile = window.innerWidth <= 640;
+    galaxyInstance = new GalaxySphere3D(galaxySphere, isMobile ? 140 : 200);
     }
 
     showToast('✨ Vuốt trên màn hình để xoay thiên hà lời chúc!');
@@ -794,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alpha: 1,
     });
   }
-  setInterval(() => { if (Math.random() > 0.35) spawnShootingStar(); }, 3800);
+  setInterval(() => { if (Math.random() > 0.2) spawnShootingStar(); }, 2200);
 
   // === ĐÈN TRỜI MINI BAY LƠ LỬNG ===
   class MiniLantern {
@@ -803,7 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this.x = Math.random() * width;
       this.y = init ? Math.random() * height : height + Math.random() * 60 + 20;
       this.size = Math.random() * 13 + 9;
-      this.speedY = Math.random() * 0.38 + 0.2;
+      this.speedY = Math.random() * 0.7 + 0.45;  /* nhanh hơn */
       this.swayA = Math.random() * Math.PI * 2;
       this.swayS = Math.random() * 0.012 + 0.006;
       this.swayD = Math.random() * 1.1 + 0.4;

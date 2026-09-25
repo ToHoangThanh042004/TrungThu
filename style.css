@@ -566,7 +566,7 @@ body {
   transform-origin: 50% 50%;
   transition: opacity 0.15s ease;
   pointer-events: none;
-  font-size: 1rem;
+  font-size: 0.9rem;  /* giảm xuống mặc định */
 }
 
 .galaxy-tag.highlight {
@@ -663,6 +663,54 @@ body {
   gap: 10px;
   width: 100%;
   justify-content: center;
+}
+
+/* ================================================
+   RESPONSIVE MOBILE — GALAXY & MOON STAGE
+   ================================================ */
+@media (max-width: 640px) {
+  /* Thu nhỏ font chữ trong thiên hà */
+  .galaxy-tag            { font-size: 0.72rem; }
+  .galaxy-tag.highlight  { font-size: 0.9rem; }
+  .galaxy-tag.emoji-tag  { font-size: 1.1rem; }
+
+  /* Giảm chiều cao viewport */
+  .galaxy-viewport { min-height: 320px; perspective: 600px; }
+
+  /* Nút nhỏ hơn */
+  .galaxy-actions .btn { font-size: 0.78rem; padding: 8px 14px; }
+  .galaxy-hint { font-size: 0.7rem; }
+
+  /* Orbit photos: bán kính nhỏ hơn + tốc độ nhanh hơn */
+  .orbit-photo {
+    width: 62px;
+    height: 62px;
+    transform:
+      rotate(var(--orbit-angle))
+      translateX(120px)
+      rotate(calc(-1 * var(--orbit-angle)));
+    animation: orbitFloat 2s ease-in-out infinite var(--orbit-delay);
+  }
+  .orbit-photo img { width: 62px; height: 62px; }
+  .orbit-photo::before { animation: orbit-ring-spin 1.8s linear infinite; }
+  .orbit-glow { animation: orbit-glow-pulse 1.6s ease-in-out infinite var(--orbit-delay); }
+}
+
+@media (max-width: 380px) {
+  .galaxy-tag            { font-size: 0.62rem; }
+  .galaxy-tag.highlight  { font-size: 0.78rem; }
+  .galaxy-tag.emoji-tag  { font-size: 0.95rem; }
+
+  .orbit-photo {
+    width: 52px;
+    height: 52px;
+    transform:
+      rotate(var(--orbit-angle))
+      translateX(100px)
+      rotate(calc(-1 * var(--orbit-angle)));
+    animation: orbitFloat 1.6s ease-in-out infinite var(--orbit-delay);
+  }
+  .orbit-photo img { width: 52px; height: 52px; }
 }
 
 /* ==========================================
