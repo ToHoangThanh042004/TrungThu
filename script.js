@@ -343,8 +343,21 @@ document.addEventListener('DOMContentLoaded', () => {
         '🌸', '🍃', '🌺', '🦋'
       ];
 
+      // 4 ảnh kỷ niệm mặc định luôn có trong thiên hà
+      const defaultPhotos = [
+        'assets/photo1.jpg',
+        'assets/photo2.jpg',
+        'assets/photo3.jpg',
+        'assets/photo4.jpg',
+      ];
+
+      // Nếu URL có param ?photo= thì thay ảnh đầu tiên
       if (currentParams.photo) {
-        wordList.push({ type: 'photo', url: decodeURIComponent(currentParams.photo) });
+        defaultPhotos[0] = decodeURIComponent(currentParams.photo);
+      }
+
+      for (const photoUrl of defaultPhotos) {
+        wordList.push({ type: 'photo', url: photoUrl });
       }
 
       // Danh sách emoji để nhận diện class

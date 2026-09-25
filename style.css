@@ -474,18 +474,57 @@ body {
 }
 
 .galaxy-tag.photo-tag {
-  width: 50px;
-  height: 50px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid var(--color-gold);
-  box-shadow: 0 0 12px rgba(255, 209, 102, 0.8);
+  overflow: visible;
+  padding: 0;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.galaxy-tag.photo-tag::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ffd166, #fff3a3, #ffd166, #f59e0b, #ffd166
+  );
+  animation: galaxy-photo-spin 4s linear infinite;
+  z-index: 0;
+}
+
+.galaxy-tag.photo-tag::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,209,102,0.35) 0%, transparent 70%);
+  animation: galaxy-photo-pulse 2.5s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes galaxy-photo-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes galaxy-photo-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.15); }
 }
 
 .galaxy-tag.photo-tag img {
-  width: 100%;
-  height: 100%;
+  position: relative;
+  z-index: 1;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 0 18px rgba(255,209,102,0.9), 0 0 40px rgba(255,209,102,0.4);
+  display: block;
 }
 
 /* HUD dưới cùng của thiên hà */
